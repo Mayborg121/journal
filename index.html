@@ -1,0 +1,8456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1, viewport-fit=cover"
+>
+
+<meta name="theme-color" content="#6c5ce7">
+<meta name="color-scheme" content="light dark">
+
+<title>Mayborg Vault | Secure Notes and Journal</title>
+
+<style>
+/* =========================================================
+MAYBORG VAULT
+Standalone Offline Notes and Journaling Application
+========================================================= */
+
+:root {
+--accent: #6c5ce7;
+--accent-rgb: 108, 92, 231;
+
+--accent-soft: rgba(var(--accent-rgb), 0.13);
+--accent-medium: rgba(var(--accent-rgb), 0.22);
+--accent-strong: rgba(var(--accent-rgb), 0.34);
+
+--background: #edf0f7;
+--background-secondary: #f7f8fc;
+
+--surface: rgba(255, 255, 255, 0.8);
+--surface-solid: #ffffff;
+--surface-soft: rgba(255, 255, 255, 0.54);
+
+--border: rgba(32, 38, 62, 0.1);
+
+--text: #202331;
+--text-soft: #64697d;
+--text-muted: #9297aa;
+
+--success: #18a87f;
+--success-soft: rgba(24, 168, 127, 0.14);
+
+--danger: #e34f67;
+--danger-soft: rgba(227, 79, 103, 0.14);
+
+--warning: #e4a12e;
+--warning-soft: rgba(228, 161, 46, 0.14);
+
+--shadow-small: 0 5px 18px rgba(34, 42, 72, 0.07);
+--shadow-medium: 0 12px 38px rgba(34, 42, 72, 0.12);
+--shadow-large: 0 28px 85px rgba(34, 42, 72, 0.2);
+
+--radius-small: 10px;
+--radius-medium: 15px;
+--radius-large: 23px;
+
+--header-height: 70px;
+--sidebar-width: 270px;
+--notes-width: 340px;
+
+--transition-fast: 140ms ease;
+--transition: 220ms ease;
+--transition-slow: 360ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+body.dark {
+--background: #0e1118;
+--background-secondary: #141821;
+
+--surface: rgba(27, 31, 43, 0.84);
+--surface-solid: #1a1e29;
+--surface-soft: rgba(27, 31, 43, 0.58);
+
+--border: rgba(255, 255, 255, 0.085);
+
+--text: #f2f3f7;
+--text-soft: #b2b6c7;
+--text-muted: #777d91;
+
+--shadow-small: 0 5px 18px rgba(0, 0, 0, 0.18);
+--shadow-medium: 0 12px 38px rgba(0, 0, 0, 0.27);
+--shadow-large: 0 28px 85px rgba(0, 0, 0, 0.42);
+}
+
+* {
+box-sizing: border-box;
+}
+
+html {
+width: 100%;
+height: 100%;
+overflow: hidden;
+background: var(--background);
+}
+
+body {
+width: 100%;
+height: 100%;
+margin: 0;
+overflow: hidden;
+
+color: var(--text);
+
+background:
+radial-gradient(
+circle at 7% 15%,
+rgba(var(--accent-rgb), 0.16),
+transparent 30%
+),
+radial-gradient(
+circle at 93% 87%,
+rgba(24, 168, 127, 0.12),
+transparent 29%
+),
+var(--background);
+
+font-family:
+Inter,
+-apple-system,
+BlinkMacSystemFont,
+"Segoe UI",
+Roboto,
+Helvetica,
+Arial,
+sans-serif;
+
+transition:
+color var(--transition),
+background var(--transition);
+}
+
+button,
+input,
+textarea,
+select {
+font: inherit;
+}
+
+button {
+color: inherit;
+}
+
+button,
+[role="button"] {
+-webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[contenteditable="true"]:focus-visible {
+outline: 3px solid var(--accent-medium);
+outline-offset: 2px;
+}
+
+::selection {
+color: #ffffff;
+background: var(--accent);
+}
+
+::-webkit-scrollbar {
+width: 9px;
+height: 9px;
+}
+
+::-webkit-scrollbar-track {
+background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+border: 2px solid transparent;
+border-radius: 999px;
+background: rgba(125, 130, 150, 0.38);
+background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+background: rgba(125, 130, 150, 0.58);
+background-clip: padding-box;
+}
+
+.hidden {
+display: none !important;
+}
+
+.glass {
+border: 1px solid var(--border);
+background: var(--surface);
+box-shadow: var(--shadow-medium);
+backdrop-filter: blur(24px) saturate(145%);
+-webkit-backdrop-filter: blur(24px) saturate(145%);
+}
+
+/* =========================================================
+ICONS
+========================================================= */
+
+.icon {
+width: 21px;
+height: 21px;
+
+flex: 0 0 auto;
+display: inline-flex;
+align-items: center;
+justify-content: center;
+
+font-family:
+"Segoe UI Symbol",
+"Apple Color Emoji",
+sans-serif;
+
+font-size: 18px;
+font-style: normal;
+font-weight: 500;
+line-height: 1;
+
+user-select: none;
+}
+
+.icon.small {
+width: 17px;
+height: 17px;
+font-size: 15px;
+}
+
+.icon.large {
+width: 30px;
+height: 30px;
+font-size: 27px;
+}
+
+/* =========================================================
+BUTTONS AND FIELDS
+========================================================= */
+
+.button {
+min-height: 43px;
+
+display: inline-flex;
+align-items: center;
+justify-content: center;
+gap: 9px;
+
+border: 1px solid transparent;
+border-radius: 13px;
+
+padding: 9px 15px;
+
+color: var(--text);
+background: var(--surface-solid);
+box-shadow: var(--shadow-small);
+
+cursor: pointer;
+
+font-weight: 750;
+
+transition:
+transform var(--transition-fast),
+background var(--transition-fast),
+border-color var(--transition-fast),
+box-shadow var(--transition-fast),
+opacity var(--transition-fast);
+}
+
+.button:hover {
+transform: translateY(-1px);
+border-color: var(--border);
+box-shadow: var(--shadow-medium);
+}
+
+.button:active {
+transform: scale(0.98);
+}
+
+.button:disabled {
+cursor: not-allowed;
+opacity: 0.55;
+transform: none;
+}
+
+.button.primary {
+color: #ffffff;
+
+background:
+linear-gradient(
+135deg,
+rgba(255, 255, 255, 0.2),
+transparent 44%
+),
+var(--accent);
+
+box-shadow:
+0 11px 25px rgba(var(--accent-rgb), 0.27);
+}
+
+.button.soft {
+color: var(--accent);
+background: var(--accent-soft);
+box-shadow: none;
+}
+
+.button.ghost {
+background: transparent;
+box-shadow: none;
+}
+
+.button.danger {
+color: var(--danger);
+background: var(--danger-soft);
+box-shadow: none;
+}
+
+.button.success {
+color: var(--success);
+background: var(--success-soft);
+box-shadow: none;
+}
+
+.button.block {
+width: 100%;
+}
+
+.button.compact {
+min-height: 36px;
+padding: 7px 11px;
+border-radius: 11px;
+font-size: 0.85rem;
+}
+
+.icon-button {
+width: 42px;
+height: 42px;
+
+flex: 0 0 auto;
+display: inline-flex;
+align-items: center;
+justify-content: center;
+
+border: 1px solid transparent;
+border-radius: 13px;
+
+padding: 0;
+
+color: var(--text-soft);
+background: transparent;
+
+cursor: pointer;
+
+transition:
+color var(--transition-fast),
+background var(--transition-fast),
+border-color var(--transition-fast),
+transform var(--transition-fast);
+}
+
+.icon-button:hover {
+color: var(--accent);
+border-color: var(--border);
+background: var(--accent-soft);
+}
+
+.icon-button:active {
+transform: scale(0.94);
+}
+
+.icon-button.active {
+color: var(--accent);
+background: var(--accent-soft);
+}
+
+.field {
+width: 100%;
+display: flex;
+flex-direction: column;
+gap: 7px;
+}
+
+.field label {
+color: var(--text-soft);
+font-size: 0.84rem;
+font-weight: 750;
+}
+
+.field input,
+.field textarea,
+.field select {
+width: 100%;
+min-height: 45px;
+
+border: 1px solid var(--border);
+border-radius: 13px;
+
+padding: 10px 13px;
+
+color: var(--text);
+background: var(--surface-soft);
+
+transition:
+border-color var(--transition-fast),
+box-shadow var(--transition-fast),
+background var(--transition-fast);
+}
+
+.field input:focus,
+.field textarea:focus,
+.field select:focus {
+border-color: var(--accent);
+background: var(--surface-solid);
+box-shadow: 0 0 0 4px var(--accent-soft);
+outline: none;
+}
+
+.field-hint {
+color: var(--text-muted);
+font-size: 0.75rem;
+line-height: 1.45;
+}
+
+.password-container {
+position: relative;
+}
+
+.password-container input {
+padding-right: 49px;
+}
+
+.password-toggle {
+position: absolute;
+top: 50%;
+right: 4px;
+transform: translateY(-50%);
+}
+
+/* =========================================================
+AUTHENTICATION
+========================================================= */
+
+.auth-screen {
+position: fixed;
+inset: 0;
+z-index: 1000;
+
+display: grid;
+place-items: center;
+
+overflow: auto;
+padding: 28px 18px;
+
+background:
+radial-gradient(
+circle at 16% 17%,
+rgba(108, 92, 231, 0.42),
+transparent 32%
+),
+radial-gradient(
+circle at 84% 82%,
+rgba(21, 185, 153, 0.28),
+transparent 34%
+),
+linear-gradient(
+145deg,
+#0f121b,
+#19162e 55%,
+#0e131c
+);
+}
+
+.auth-orb {
+position: fixed;
+border-radius: 50%;
+filter: blur(2px);
+pointer-events: none;
+animation: floatOrb 9s ease-in-out infinite alternate;
+}
+
+.auth-orb.one {
+top: 8%;
+left: 8%;
+width: 125px;
+height: 125px;
+opacity: 0.38;
+background: linear-gradient(135deg, #745fff, #c65cff);
+}
+
+.auth-orb.two {
+right: 9%;
+bottom: 9%;
+width: 180px;
+height: 180px;
+opacity: 0.27;
+background: linear-gradient(135deg, #23c7a0, #3189ff);
+animation-delay: -3s;
+}
+
+@keyframes floatOrb {
+from {
+transform: translate3d(-7px, -10px, 0) scale(0.95);
+}
+
+to {
+transform: translate3d(16px, 13px, 0) scale(1.07);
+}
+}
+
+.auth-card {
+width: min(100%, 475px);
+
+position: relative;
+z-index: 2;
+
+overflow: hidden;
+
+border: 1px solid rgba(255, 255, 255, 0.14);
+border-radius: 28px;
+
+padding: 34px;
+
+color: #ffffff;
+background: rgba(21, 24, 36, 0.8);
+
+box-shadow: 0 30px 90px rgba(0, 0, 0, 0.43);
+
+backdrop-filter: blur(30px) saturate(145%);
+-webkit-backdrop-filter: blur(30px) saturate(145%);
+}
+
+.auth-card::before {
+content: "";
+
+position: absolute;
+inset: 0 0 auto;
+height: 3px;
+
+background:
+linear-gradient(
+90deg,
+#6c5ce7,
+#e056b4,
+#ff8b42,
+#22bc9d
+);
+}
+
+.auth-brand {
+display: flex;
+align-items: center;
+gap: 15px;
+margin-bottom: 25px;
+}
+
+.brand-mark {
+width: 54px;
+height: 54px;
+
+display: grid;
+place-items: center;
+
+border-radius: 17px;
+
+color: #ffffff;
+
+background:
+linear-gradient(
+135deg,
+rgba(255, 255, 255, 0.24),
+transparent 46%
+),
+linear-gradient(135deg, #765eff, #4c33cf);
+
+box-shadow:
+0 13px 30px rgba(108, 92, 231, 0.39);
+
+font-size: 27px;
+}
+
+.auth-brand h1 {
+margin: 0 0 3px;
+font-size: 1.55rem;
+letter-spacing: -0.045em;
+}
+
+.auth-brand p {
+margin: 0;
+color: rgba(255, 255, 255, 0.58);
+font-size: 0.83rem;
+}
+
+.auth-title {
+margin: 0 0 7px;
+font-size: 1.3rem;
+letter-spacing: -0.025em;
+}
+
+.auth-description {
+margin: 0 0 23px;
+
+color: rgba(255, 255, 255, 0.64);
+
+font-size: 0.89rem;
+line-height: 1.55;
+}
+
+.auth-card .field {
+margin-bottom: 15px;
+}
+
+.auth-card .field label {
+color: rgba(255, 255, 255, 0.76);
+}
+
+.auth-card .field input {
+color: #ffffff;
+border-color: rgba(255, 255, 255, 0.12);
+background: rgba(255, 255, 255, 0.075);
+}
+
+.auth-card .field input::placeholder {
+color: rgba(255, 255, 255, 0.33);
+}
+
+.auth-card .field input:focus {
+border-color: #9180ff;
+background: rgba(255, 255, 255, 0.11);
+box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.23);
+}
+
+.auth-card .password-toggle {
+color: rgba(255, 255, 255, 0.65);
+}
+
+.auth-actions {
+display: grid;
+gap: 10px;
+margin-top: 22px;
+}
+
+.auth-actions .button {
+min-height: 48px;
+}
+
+.auth-secondary {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 9px;
+margin-top: 10px;
+}
+
+.auth-card .button.ghost {
+color: rgba(255, 255, 255, 0.77);
+border-color: rgba(255, 255, 255, 0.11);
+}
+
+.auth-card .button.ghost:hover {
+color: #ffffff;
+background: rgba(255, 255, 255, 0.08);
+}
+
+.auth-message {
+display: none;
+margin-top: 15px;
+
+border-radius: 12px;
+padding: 11px 13px;
+
+font-size: 0.83rem;
+line-height: 1.45;
+}
+
+.auth-message.show {
+display: block;
+}
+
+.auth-message.error {
+color: #ffb8c3;
+border: 1px solid rgba(227, 79, 103, 0.28);
+background: rgba(227, 79, 103, 0.13);
+}
+
+.auth-message.success {
+color: #9ce8d1;
+border: 1px solid rgba(24, 168, 127, 0.28);
+background: rgba(24, 168, 127, 0.13);
+}
+
+.security-notice {
+display: flex;
+align-items: flex-start;
+gap: 8px;
+
+margin-top: 19px;
+
+color: rgba(255, 255, 255, 0.42);
+
+font-size: 0.73rem;
+line-height: 1.45;
+}
+
+/* =========================================================
+APPLICATION LAYOUT
+========================================================= */
+
+.application {
+width: 100%;
+height: 100dvh;
+
+display: grid;
+
+grid-template-columns:
+var(--sidebar-width)
+var(--notes-width)
+minmax(0, 1fr);
+
+grid-template-rows:
+var(--header-height)
+minmax(0, 1fr);
+
+grid-template-areas:
+"header header header"
+"sidebar notes editor";
+
+opacity: 1;
+
+transition: opacity var(--transition);
+}
+
+.application.locked {
+opacity: 0;
+pointer-events: none;
+}
+
+/* =========================================================
+HEADER
+========================================================= */
+
+.topbar {
+grid-area: header;
+
+position: relative;
+z-index: 40;
+
+display: grid;
+grid-template-columns:
+var(--sidebar-width)
+minmax(0, 1fr)
+auto;
+
+align-items: center;
+
+border-bottom: 1px solid var(--border);
+
+background: var(--surface);
+
+backdrop-filter: blur(25px) saturate(150%);
+-webkit-backdrop-filter: blur(25px) saturate(150%);
+}
+
+.topbar-brand {
+height: 100%;
+
+display: flex;
+align-items: center;
+gap: 11px;
+
+border-right: 1px solid var(--border);
+padding: 0 21px;
+}
+
+.topbar-brand .brand-mark {
+width: 39px;
+height: 39px;
+border-radius: 13px;
+font-size: 20px;
+}
+
+.brand-copy {
+min-width: 0;
+}
+
+.brand-copy strong {
+display: block;
+font-size: 0.98rem;
+letter-spacing: -0.025em;
+}
+
+.brand-copy span {
+display: block;
+
+margin-top: 2px;
+
+color: var(--text-muted);
+
+font-size: 0.65rem;
+letter-spacing: 0.09em;
+text-transform: uppercase;
+}
+
+.global-search {
+width: min(620px, calc(100% - 28px));
+
+position: relative;
+justify-self: center;
+}
+
+.global-search .search-icon {
+position: absolute;
+top: 50%;
+left: 14px;
+
+color: var(--text-muted);
+
+transform: translateY(-50%);
+pointer-events: none;
+}
+
+.global-search input {
+width: 100%;
+height: 43px;
+
+border: 1px solid var(--border);
+border-radius: 14px;
+
+padding: 0 48px 0 44px;
+
+color: var(--text);
+background: var(--surface-soft);
+
+transition:
+border-color var(--transition-fast),
+background var(--transition-fast),
+box-shadow var(--transition-fast);
+}
+
+.global-search input:focus {
+border-color: var(--accent);
+background: var(--surface-solid);
+box-shadow: 0 0 0 4px var(--accent-soft);
+outline: none;
+}
+
+.search-shortcut {
+position: absolute;
+top: 50%;
+right: 11px;
+
+border: 1px solid var(--border);
+border-radius: 7px;
+
+padding: 3px 6px;
+
+color: var(--text-muted);
+background: var(--surface-solid);
+
+font-size: 0.63rem;
+
+transform: translateY(-50%);
+}
+
+.topbar-actions {
+display: flex;
+align-items: center;
+gap: 5px;
+padding-right: 17px;
+}
+
+.save-status {
+min-width: 95px;
+
+display: flex;
+align-items: center;
+justify-content: flex-end;
+gap: 7px;
+
+margin-right: 4px;
+
+color: var(--text-muted);
+
+font-size: 0.72rem;
+}
+
+.save-dot {
+width: 7px;
+height: 7px;
+
+border-radius: 999px;
+background: var(--success);
+
+box-shadow: 0 0 0 4px var(--success-soft);
+}
+
+.save-status.saving .save-dot {
+background: var(--warning);
+animation: savePulse 950ms ease-in-out infinite;
+}
+
+.save-status.error .save-dot {
+background: var(--danger);
+}
+
+@keyframes savePulse {
+50% {
+opacity: 0.45;
+transform: scale(0.78);
+}
+}
+
+.mobile-sidebar-button {
+display: none;
+}
+
+/* =========================================================
+SIDEBAR
+========================================================= */
+
+.sidebar {
+grid-area: sidebar;
+
+position: relative;
+z-index: 30;
+
+min-height: 0;
+
+display: flex;
+flex-direction: column;
+
+overflow: hidden;
+
+border-right: 1px solid var(--border);
+
+background: var(--surface-soft);
+
+backdrop-filter: blur(22px);
+-webkit-backdrop-filter: blur(22px);
+}
+
+.sidebar-scroll {
+min-height: 0;
+flex: 1;
+
+overflow-y: auto;
+padding: 18px 14px;
+}
+
+.sidebar .button.primary {
+margin-bottom: 18px;
+}
+
+.navigation-section {
+margin-bottom: 22px;
+}
+
+.navigation-label {
+margin: 0 9px 8px;
+
+color: var(--text-muted);
+
+font-size: 0.66rem;
+font-weight: 850;
+letter-spacing: 0.105em;
+text-transform: uppercase;
+}
+
+.navigation-item {
+width: 100%;
+min-height: 42px;
+
+display: flex;
+align-items: center;
+gap: 11px;
+
+border: 0;
+border-radius: 12px;
+
+padding: 8px 11px;
+
+color: var(--text-soft);
+background: transparent;
+
+cursor: pointer;
+
+font-size: 0.87rem;
+font-weight: 680;
+text-align: left;
+
+transition:
+color var(--transition-fast),
+background var(--transition-fast);
+}
+
+.navigation-item:hover {
+color: var(--text);
+background: var(--surface);
+}
+
+.navigation-item.active {
+color: var(--accent);
+background: var(--accent-soft);
+}
+
+.navigation-count {
+min-width: 24px;
+
+margin-left: auto;
+
+border-radius: 999px;
+padding: 3px 7px;
+
+color: var(--text-muted);
+background: var(--surface);
+
+font-size: 0.66rem;
+font-weight: 850;
+text-align: center;
+}
+
+.navigation-item.active .navigation-count {
+color: var(--accent);
+background: var(--accent-medium);
+}
+
+.tag-dot {
+width: 12px;
+height: 12px;
+
+flex: 0 0 auto;
+
+border: 3px solid rgba(255, 255, 255, 0.5);
+border-radius: 50%;
+
+box-shadow: 0 1px 4px rgba(0, 0, 0, 0.16);
+}
+
+.sidebar-profile {
+display: flex;
+align-items: center;
+gap: 11px;
+
+border-top: 1px solid var(--border);
+padding: 14px 16px;
+
+background: var(--surface-soft);
+}
+
+.avatar {
+width: 40px;
+height: 40px;
+
+flex: 0 0 auto;
+display: grid;
+place-items: center;
+
+overflow: hidden;
+
+border: 2px solid rgba(255, 255, 255, 0.42);
+border-radius: 14px;
+
+color: #ffffff;
+
+background:
+linear-gradient(
+135deg,
+rgba(255, 255, 255, 0.23),
+transparent 50%
+),
+var(--accent);
+
+box-shadow:
+0 7px 19px rgba(var(--accent-rgb), 0.2);
+
+font-size: 0.82rem;
+font-weight: 900;
+}
+
+.avatar img {
+width: 100%;
+height: 100%;
+object-fit: cover;
+}
+
+.profile-copy {
+min-width: 0;
+flex: 1;
+}
+
+.profile-copy strong,
+.profile-copy span {
+display: block;
+
+overflow: hidden;
+text-overflow: ellipsis;
+white-space: nowrap;
+}
+
+.profile-copy strong {
+font-size: 0.82rem;
+}
+
+.profile-copy span {
+margin-top: 3px;
+color: var(--text-muted);
+font-size: 0.68rem;
+}
+
+/* =========================================================
+NOTES LIST
+========================================================= */
+
+.notes-panel {
+grid-area: notes;
+
+min-width: 0;
+min-height: 0;
+
+display: flex;
+flex-direction: column;
+
+overflow: hidden;
+
+border-right: 1px solid var(--border);
+background: rgba(255, 255, 255, 0.2);
+}
+
+body.dark .notes-panel {
+background: rgba(5, 7, 12, 0.15);
+}
+
+.notes-header {
+flex: 0 0 auto;
+padding: 18px 17px 13px;
+}
+
+.notes-heading {
+display: flex;
+align-items: center;
+gap: 8px;
+
+margin-bottom: 12px;
+}
+
+.notes-heading h2 {
+min-width: 0;
+flex: 1;
+
+overflow: hidden;
+
+margin: 0;
+
+font-size: 1.12rem;
+letter-spacing: -0.035em;
+text-overflow: ellipsis;
+white-space: nowrap;
+}
+
+.notes-heading span {
+color: var(--text-muted);
+font-size: 0.71rem;
+}
+
+.notes-controls {
+display: grid;
+grid-template-columns: minmax(0, 1fr) 42px;
+gap: 8px;
+}
+
+.notes-controls select {
+min-width: 0;
+height: 39px;
+
+border: 1px solid var(--border);
+border-radius: 12px;
+
+padding: 0 11px;
+
+color: var(--text-soft);
+background: var(--surface);
+
+cursor: pointer;
+outline: none;
+}
+
+.notes-list {
+min-height: 0;
+flex: 1;
+
+overflow-y: auto;
+padding: 1px 11px 20px;
+}
+
+.note-card {
+position: relative;
+
+overflow: hidden;
+
+margin-bottom: 9px;
+
+border: 1px solid transparent;
+border-radius: 15px;
+
+padding: 13px 14px;
+
+background: var(--surface-soft);
+
+cursor: pointer;
+
+transition:
+transform var(--transition-fast),
+background var(--transition-fast),
+border-color var(--transition-fast),
+box-shadow var(--transition-fast);
+}
+
+.note-card:hover {
+transform: translateY(-1px);
+border-color: var(--border);
+background: var(--surface);
+box-shadow: var(--shadow-small);
+}
+
+.note-card.active {
+border-color: rgba(var(--accent-rgb), 0.34);
+background: var(--accent-soft);
+box-shadow: 0 7px 20px rgba(var(--accent-rgb), 0.09);
+}
+
+.note-card.active::before {
+content: "";
+
+position: absolute;
+top: 11px;
+bottom: 11px;
+left: 0;
+
+width: 3px;
+
+border-radius: 0 5px 5px 0;
+background: var(--accent);
+}
+
+.note-card-top {
+display: flex;
+align-items: flex-start;
+gap: 7px;
+}
+
+.note-card-title {
+min-width: 0;
+flex: 1;
+
+overflow: hidden;
+
+margin: 0;
+
+color: var(--text);
+
+font-size: 0.88rem;
+font-weight: 820;
+line-height: 1.35;
+text-overflow: ellipsis;
+white-space: nowrap;
+}
+
+.note-card-preview {
+min-height: 37px;
+
+display: -webkit-box;
+
+overflow: hidden;
+
+margin: 7px 0 9px;
+
+color: var(--text-soft);
+
+font-size: 0.75rem;
+line-height: 1.45;
+
+-webkit-box-orient: vertical;
+-webkit-line-clamp: 2;
+}
+
+.note-card-footer {
+display: flex;
+align-items: center;
+gap: 7px;
+
+color: var(--text-muted);
+
+font-size: 0.65rem;
+}
+
+.note-type-badge {
+border-radius: 7px;
+padding: 3px 6px;
+
+color: var(--accent);
+background: var(--accent-soft);
+
+font-size: 0.6rem;
+font-weight: 850;
+letter-spacing: 0.03em;
+text-transform: uppercase;
+}
+
+.mini-tag {
+max-width: 78px;
+
+overflow: hidden;
+
+border-radius: 999px;
+padding: 3px 7px;
+
+background: var(--surface);
+
+text-overflow: ellipsis;
+white-space: nowrap;
+}
+
+.empty-list {
+display: grid;
+place-items: center;
+
+padding: 45px 20px;
+
+color: var(--text-muted);
+text-align: center;
+}
+
+.empty-list-icon {
+width: 58px;
+height: 58px;
+
+display: grid;
+place-items: center;
+
+margin-bottom: 13px;
+
+border-radius: 19px;
+
+color: var(--accent);
+background: var(--accent-soft);
+
+font-size: 26px;
+}
+
+.empty-list strong {
+color: var(--text-soft);
+font-size: 0.9rem;
+}
+
+.empty-list p {
+max-width: 220px;
+margin: 7px 0 0;
+
+font-size: 0.75rem;
+line-height: 1.5;
+}
+
+/* =========================================================
+EDITOR
+========================================================= */
+
+.editor-panel {
+grid-area: editor;
+
+min-width: 0;
+min-height: 0;
+
+position: relative;
+
+display: flex;
+flex-direction: column;
+
+overflow: hidden;
+
+background: var(--surface-soft);
+}
+
+.editor-empty {
+height: 100%;
+
+display: grid;
+place-items: center;
+
+padding: 30px;
+
+text-align: center;
+}
+
+.editor-empty-card {
+max-width: 420px;
+}
+
+.editor-empty-graphic {
+width: 105px;
+height: 105px;
+
+display: grid;
+place-items: center;
+
+margin: 0 auto 20px;
+
+border-radius: 33px;
+
+color: var(--accent);
+
+background:
+linear-gradient(
+135deg,
+rgba(255, 255, 255, 0.36),
+transparent
+),
+var(--accent-soft);
+
+box-shadow:
+0 20px 55px rgba(var(--accent-rgb), 0.16);
+
+font-size: 48px;
+
+transform: rotate(-4deg);
+}
+
+.editor-empty h2 {
+margin: 0 0 8px;
+font-size: 1.4rem;
+letter-spacing: -0.04em;
+}
+
+.editor-empty p {
+margin: 0 0 20px;
+
+color: var(--text-soft);
+
+line-height: 1.65;
+}
+
+.editor-shell {
+min-height: 0;
+flex: 1;
+
+display: flex;
+flex-direction: column;
+}
+
+.editor-meta {
+flex: 0 0 auto;
+padding: 20px 26px 7px;
+}
+
+.title-row {
+display: flex;
+align-items: center;
+gap: 7px;
+}
+
+.note-title-input {
+min-width: 0;
+flex: 1;
+
+border: 0;
+padding: 0;
+
+color: var(--text);
+background: transparent;
+
+font-size: clamp(1.35rem, 2vw, 2rem);
+font-weight: 850;
+letter-spacing: -0.045em;
+
+outline: none;
+}
+
+.note-title-input::placeholder {
+color: var(--text-muted);
+}
+
+.note-submeta {
+display: flex;
+align-items: center;
+flex-wrap: wrap;
+gap: 7px 14px;
+
+margin-top: 9px;
+
+color: var(--text-muted);
+
+font-size: 0.7rem;
+}
+
+.note-submeta-item {
+display: inline-flex;
+align-items: center;
+gap: 5px;
+}
+
+.journal-mood {
+display: inline-flex;
+align-items: center;
+gap: 5px;
+}
+
+.mood-button {
+min-width: 32px;
+height: 30px;
+
+display: grid;
+place-items: center;
+
+border: 1px solid transparent;
+border-radius: 9px;
+
+background: transparent;
+
+cursor: pointer;
+
+font-size: 1rem;
+
+transition:
+background var(--transition-fast),
+transform var(--transition-fast);
+}
+
+.mood-button:hover,
+.mood-button.active {
+border-color: var(--border);
+background: var(--accent-soft);
+transform: translateY(-1px);
+}
+
+/* =========================================================
+TOOLBAR
+========================================================= */
+
+.toolbar-wrapper {
+flex: 0 0 auto;
+padding: 9px 23px;
+}
+
+.toolbar {
+display: flex;
+align-items: center;
+gap: 4px;
+
+overflow-x: auto;
+
+border: 1px solid var(--border);
+border-radius: 15px;
+
+padding: 5px;
+
+background: var(--surface);
+box-shadow: var(--shadow-small);
+
+scrollbar-width: none;
+}
+
+.toolbar::-webkit-scrollbar {
+display: none;
+}
+
+.toolbar-button {
+min-width: 34px;
+height: 34px;
+
+flex: 0 0 auto;
+display: grid;
+place-items: center;
+
+border: 0;
+border-radius: 9px;
+
+padding: 0 7px;
+
+color: var(--text-soft);
+background: transparent;
+
+cursor: pointer;
+
+font-size: 0.78rem;
+font-weight: 850;
+
+transition:
+color var(--transition-fast),
+background var(--transition-fast);
+}
+
+.toolbar-button:hover,
+.toolbar-button.active {
+color: var(--accent);
+background: var(--accent-soft);
+}
+
+.toolbar-select {
+height: 34px;
+
+flex: 0 0 auto;
+
+border: 0;
+border-radius: 9px;
+
+padding: 0 8px;
+
+color: var(--text-soft);
+background: transparent;
+
+cursor: pointer;
+
+font-size: 0.75rem;
+font-weight: 750;
+
+outline: none;
+}
+
+.toolbar-select:hover {
+color: var(--accent);
+background: var(--accent-soft);
+}
+
+.toolbar-divider {
+width: 1px;
+height: 22px;
+
+flex: 0 0 auto;
+
+margin: 0 3px;
+
+background: var(--border);
+}
+
+.color-button-container {
+width: 34px;
+height: 34px;
+
+position: relative;
+flex: 0 0 auto;
+}
+
+.color-button-container input {
+width: 1px;
+height: 1px;
+
+position: absolute;
+
+opacity: 0;
+pointer-events: none;
+}
+
+.editor-scroll {
+min-height: 0;
+flex: 1;
+
+overflow-y: auto;
+padding: 0 26px 72px;
+}
+
+.rich-editor {
+min-height: calc(100dvh - 265px);
+
+border: 0;
+padding: 18px 5px 105px;
+
+color: var(--text);
+background: transparent;
+
+font-family: inherit;
+font-size: 1rem;
+line-height: 1.78;
+
+outline: none;
+overflow-wrap: anywhere;
+}
+
+.rich-editor:empty::before {
+content: attr(data-placeholder);
+color: var(--text-muted);
+pointer-events: none;
+}
+
+.rich-editor h1,
+.rich-editor h2,
+.rich-editor h3 {
+margin: 1.2em 0 0.55em;
+line-height: 1.25;
+letter-spacing: -0.035em;
+}
+
+.rich-editor blockquote {
+margin: 1.2em 0;
+
+border-left: 4px solid var(--accent);
+border-radius: 0 11px 11px 0;
+
+padding: 10px 15px;
+
+color: var(--text-soft);
+background: var(--accent-soft);
+}
+
+.rich-editor pre {
+overflow-x: auto;
+
+border: 1px solid var(--border);
+border-radius: 13px;
+
+padding: 14px;
+
+background: var(--background-secondary);
+
+font-family:
+"SFMono-Regular",
+Consolas,
+"Liberation Mono",
+monospace;
+
+font-size: 0.86rem;
+line-height: 1.55;
+}
+
+.rich-editor code {
+border-radius: 6px;
+padding: 2px 5px;
+
+color: var(--accent);
+background: var(--accent-soft);
+}
+
+.rich-editor img {
+max-width: 100%;
+height: auto;
+
+display: block;
+
+margin: 18px auto;
+
+border: 1px solid var(--border);
+border-radius: 17px;
+
+box-shadow: var(--shadow-medium);
+}
+
+.rich-editor figure {
+margin: 20px 0;
+}
+
+.rich-editor figcaption {
+margin-top: 8px;
+color: var(--text-muted);
+font-size: 0.78rem;
+text-align: center;
+}
+
+.rich-editor a {
+color: var(--accent);
+}
+
+.rich-editor hr {
+border: 0;
+border-top: 1px solid var(--border);
+margin: 25px 0;
+}
+
+.rich-editor.dragging {
+border: 2px dashed var(--accent);
+border-radius: 17px;
+background: var(--accent-soft);
+}
+
+.editor-footer {
+position: absolute;
+right: 22px;
+bottom: 14px;
+left: 22px;
+z-index: 5;
+
+display: flex;
+align-items: center;
+justify-content: space-between;
+gap: 12px;
+
+border: 1px solid var(--border);
+border-radius: 14px;
+
+padding: 8px 13px;
+
+color: var(--text-muted);
+background: var(--surface);
+
+box-shadow: var(--shadow-small);
+
+backdrop-filter: blur(22px);
+-webkit-backdrop-filter: blur(22px);
+
+font-size: 0.69rem;
+
+pointer-events: none;
+}
+
+.tag-input-row {
+display: flex;
+align-items: center;
+gap: 6px;
+
+pointer-events: auto;
+}
+
+.tag-input-row input {
+width: 160px;
+
+border: 0;
+padding: 4px 7px;
+
+color: var(--text);
+background: transparent;
+
+font-size: 0.69rem;
+outline: none;
+}
+
+.statistics-row {
+display: flex;
+align-items: center;
+gap: 12px;
+}
+
+/* =========================================================
+DRAWER
+========================================================= */
+
+.drawer-overlay {
+position: fixed;
+inset: 0;
+z-index: 110;
+
+visibility: hidden;
+opacity: 0;
+
+background: rgba(4, 6, 12, 0.44);
+
+backdrop-filter: blur(4px);
+-webkit-backdrop-filter: blur(4px);
+
+transition:
+opacity var(--transition),
+visibility var(--transition);
+}
+
+.drawer-overlay.show {
+visibility: visible;
+opacity: 1;
+}
+
+.drawer {
+width: min(390px, calc(100% - 24px));
+height: calc(100dvh - 24px);
+
+position: fixed;
+top: 12px;
+right: 12px;
+z-index: 120;
+
+display: flex;
+flex-direction: column;
+
+overflow: hidden;
+
+border: 1px solid var(--border);
+border-radius: 23px;
+
+background: var(--surface-solid);
+box-shadow: var(--shadow-large);
+
+transform: translateX(calc(100% + 26px));
+
+transition: transform var(--transition-slow);
+}
+
+.drawer.show {
+transform: translateX(0);
+}
+
+.drawer-header {
+display: flex;
+align-items: center;
+gap: 12px;
+
+border-bottom: 1px solid var(--border);
+padding: 18px 18px 14px;
+}
+
+.drawer-header-copy {
+min-width: 0;
+flex: 1;
+}
+
+.drawer-header-copy strong {
+display: block;
+font-size: 0.92rem;
+}
+
+.drawer-header-copy span {
+display: block;
+
+overflow: hidden;
+
+margin-top: 3px;
+
+color: var(--text-muted);
+
+font-size: 0.71rem;
+text-overflow: ellipsis;
+white-space: nowrap;
+}
+
+.drawer-scroll {
+min-height: 0;
+flex: 1;
+
+overflow-y: auto;
+padding: 14px;
+}
+
+.drawer-section {
+margin-bottom: 17px;
+
+border: 1px solid var(--border);
+border-radius: 16px;
+
+padding: 13px;
+
+background: var(--surface-soft);
+}
+
+.drawer-section-title {
+margin: 0 0 11px;
+
+color: var(--text-muted);
+
+font-size: 0.67rem;
+font-weight: 850;
+letter-spacing: 0.09em;
+text-transform: uppercase;
+}
+
+.drawer-menu-button {
+width: 100%;
+min-height: 44px;
+
+display: flex;
+align-items: center;
+gap: 11px;
+
+border: 0;
+border-radius: 11px;
+
+padding: 9px 10px;
+
+color: var(--text-soft);
+background: transparent;
+
+cursor: pointer;
+text-align: left;
+
+transition:
+color var(--transition-fast),
+background var(--transition-fast);
+}
+
+.drawer-menu-button:hover {
+color: var(--accent);
+background: var(--accent-soft);
+}
+
+.drawer-menu-button span:not(.icon) {
+min-width: 0;
+flex: 1;
+
+font-size: 0.81rem;
+font-weight: 720;
+}
+
+.drawer-menu-button small {
+color: var(--text-muted);
+font-size: 0.64rem;
+}
+
+.theme-row {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 7px;
+}
+
+.theme-choice {
+min-height: 60px;
+
+border: 1px solid var(--border);
+border-radius: 12px;
+
+color: var(--text-soft);
+background: var(--surface);
+
+cursor: pointer;
+
+font-size: 0.73rem;
+font-weight: 750;
+}
+
+.theme-choice.active {
+color: var(--accent);
+border-color: var(--accent);
+background: var(--accent-soft);
+}
+
+.accent-grid {
+display: grid;
+grid-template-columns: repeat(7, 1fr);
+gap: 8px;
+}
+
+.accent-choice {
+aspect-ratio: 1;
+
+border: 3px solid transparent;
+border-radius: 50%;
+
+background: var(--swatch);
+
+cursor: pointer;
+
+box-shadow:
+inset 0 0 0 1px rgba(255, 255, 255, 0.32);
+
+transition: transform var(--transition-fast);
+}
+
+.accent-choice:hover {
+transform: scale(1.1);
+}
+
+.accent-choice.active {
+border-color: var(--surface-solid);
+outline: 2px solid var(--swatch);
+transform: scale(1.08);
+}
+
+.drawer-footer {
+flex: 0 0 auto;
+
+border-top: 1px solid var(--border);
+padding: 15px;
+
+color: var(--text-soft);
+background: var(--surface-soft);
+
+font-size: 0.8rem;
+font-weight: 850;
+letter-spacing: 0.02em;
+text-align: center;
+}
+
+/* =========================================================
+MODAL
+========================================================= */
+
+.modal-overlay {
+position: fixed;
+inset: 0;
+z-index: 220;
+
+visibility: hidden;
+
+display: grid;
+place-items: center;
+
+overflow-y: auto;
+padding: 18px;
+
+opacity: 0;
+
+background: rgba(5, 7, 13, 0.56);
+
+backdrop-filter: blur(8px);
+-webkit-backdrop-filter: blur(8px);
+
+transition:
+opacity var(--transition),
+visibility var(--transition);
+}
+
+.modal-overlay.show {
+visibility: visible;
+opacity: 1;
+}
+
+.modal {
+width: min(100%, 520px);
+max-height: calc(100dvh - 36px);
+
+overflow-y: auto;
+
+border: 1px solid var(--border);
+border-radius: 22px;
+
+padding: 21px;
+
+background: var(--surface-solid);
+box-shadow: var(--shadow-large);
+
+transform: translateY(12px) scale(0.98);
+
+transition: transform var(--transition);
+}
+
+.modal-overlay.show .modal {
+transform: translateY(0) scale(1);
+}
+
+.modal-header {
+display: flex;
+align-items: flex-start;
+gap: 12px;
+
+margin-bottom: 19px;
+}
+
+.modal-header-copy {
+min-width: 0;
+flex: 1;
+}
+
+.modal-header h3 {
+margin: 0;
+font-size: 1.13rem;
+letter-spacing: -0.03em;
+}
+
+.modal-header p {
+margin: 5px 0 0;
+
+color: var(--text-muted);
+
+font-size: 0.77rem;
+line-height: 1.45;
+}
+
+.modal-body {
+display: grid;
+gap: 15px;
+}
+
+.modal-actions {
+display: flex;
+justify-content: flex-end;
+gap: 9px;
+
+margin-top: 20px;
+}
+
+.information-box {
+border: 1px solid var(--border);
+border-radius: 13px;
+
+padding: 12px;
+
+color: var(--text-soft);
+background: var(--accent-soft);
+
+font-size: 0.77rem;
+line-height: 1.55;
+}
+
+.profile-image-row {
+display: flex;
+align-items: center;
+gap: 15px;
+}
+
+.profile-image-preview {
+width: 76px;
+height: 76px;
+
+display: grid;
+place-items: center;
+
+overflow: hidden;
+
+border: 3px solid var(--accent-soft);
+border-radius: 23px;
+
+color: #ffffff;
+background: var(--accent);
+
+font-size: 1.25rem;
+font-weight: 900;
+}
+
+.profile-image-preview img {
+width: 100%;
+height: 100%;
+object-fit: cover;
+}
+
+/* =========================================================
+CONTEXT MENU
+========================================================= */
+
+.context-menu {
+min-width: 190px;
+
+position: fixed;
+z-index: 320;
+
+display: none;
+
+border: 1px solid var(--border);
+border-radius: 13px;
+
+padding: 6px;
+
+background: var(--surface-solid);
+box-shadow: var(--shadow-large);
+}
+
+.context-menu.show {
+display: block;
+}
+
+.context-menu button {
+width: 100%;
+
+display: flex;
+align-items: center;
+gap: 9px;
+
+border: 0;
+border-radius: 9px;
+
+padding: 9px 10px;
+
+color: var(--text-soft);
+background: transparent;
+
+cursor: pointer;
+
+font-size: 0.77rem;
+text-align: left;
+}
+
+.context-menu button:hover {
+color: var(--accent);
+background: var(--accent-soft);
+}
+
+.context-menu button.danger {
+color: var(--danger);
+}
+
+/* =========================================================
+TOASTS
+========================================================= */
+
+.toast-container {
+position: fixed;
+right: 18px;
+bottom: 18px;
+z-index: 520;
+
+display: grid;
+gap: 9px;
+
+pointer-events: none;
+}
+
+.toast {
+min-width: 270px;
+max-width: min(390px, calc(100vw - 36px));
+
+display: flex;
+align-items: flex-start;
+gap: 10px;
+
+border: 1px solid var(--border);
+border-radius: 14px;
+
+padding: 12px 14px;
+
+color: var(--text);
+background: var(--surface-solid);
+
+box-shadow: var(--shadow-large);
+
+opacity: 0;
+transform: translateY(14px);
+
+animation: toastArrival 260ms forwards;
+
+pointer-events: auto;
+}
+
+.toast.success .toast-symbol {
+color: var(--success);
+}
+
+.toast.error .toast-symbol {
+color: var(--danger);
+}
+
+.toast.info .toast-symbol {
+color: var(--accent);
+}
+
+.toast-copy strong {
+display: block;
+margin-bottom: 3px;
+font-size: 0.8rem;
+}
+
+.toast-copy span {
+color: var(--text-soft);
+font-size: 0.73rem;
+line-height: 1.4;
+}
+
+@keyframes toastArrival {
+to {
+opacity: 1;
+transform: translateY(0);
+}
+}
+
+/* =========================================================
+MOBILE OVERLAY
+========================================================= */
+
+.mobile-overlay {
+position: fixed;
+inset: var(--header-height) 0 0;
+z-index: 25;
+
+visibility: hidden;
+opacity: 0;
+
+background: rgba(5, 7, 13, 0.49);
+
+transition:
+opacity var(--transition),
+visibility var(--transition);
+}
+
+.mobile-overlay.show {
+visibility: visible;
+opacity: 1;
+}
+
+/* =========================================================
+RESPONSIVE
+========================================================= */
+
+@media (max-width: 1180px) {
+:root {
+--sidebar-width: 235px;
+--notes-width: 310px;
+}
+}
+
+@media (max-width: 960px) {
+:root {
+--sidebar-width: 275px;
+--notes-width: 320px;
+}
+
+.application {
+grid-template-columns:
+var(--notes-width)
+minmax(0, 1fr);
+
+grid-template-areas:
+"header header"
+"notes editor";
+}
+
+.topbar {
+grid-template-columns:
+auto
+minmax(0, 1fr)
+auto;
+}
+
+.topbar-brand {
+border-right: 0;
+padding: 0 11px;
+}
+
+.topbar-brand .brand-copy {
+display: none;
+}
+
+.mobile-sidebar-button {
+display: inline-flex;
+}
+
+.sidebar {
+width: var(--sidebar-width);
+
+position: fixed;
+top: var(--header-height);
+bottom: 0;
+left: 0;
+z-index: 35;
+
+box-shadow: var(--shadow-large);
+
+transform: translateX(-105%);
+
+transition: transform var(--transition-slow);
+}
+
+.sidebar.mobile-show {
+transform: translateX(0);
+}
+}
+
+@media (max-width: 700px) {
+:root {
+--header-height: 64px;
+}
+
+.application {
+grid-template-columns: 100%;
+
+grid-template-areas:
+"header"
+"notes";
+}
+
+.application.editor-mobile-open {
+grid-template-areas:
+"header"
+"editor";
+}
+
+.topbar {
+grid-template-columns:
+auto
+minmax(0, 1fr)
+auto;
+}
+
+.topbar-brand {
+padding-left: 8px;
+padding-right: 3px;
+}
+
+.topbar-brand .brand-mark {
+display: none;
+}
+
+.global-search {
+width: calc(100% - 10px);
+}
+
+.topbar-actions {
+gap: 2px;
+padding-right: 5px;
+}
+
+.topbar-actions .save-status,
+#quickThemeButton {
+display: none;
+}
+
+.notes-panel {
+border-right: 0;
+}
+
+.editor-panel {
+display: none;
+}
+
+.application.editor-mobile-open .notes-panel {
+display: none;
+}
+
+.application.editor-mobile-open .editor-panel {
+display: flex;
+}
+
+.mobile-back-button {
+display: inline-flex !important;
+}
+
+.editor-meta {
+padding: 15px 15px 5px;
+}
+
+.note-title-input {
+font-size: 1.35rem;
+}
+
+.toolbar-wrapper {
+padding: 8px 11px;
+}
+
+.editor-scroll {
+padding: 0 15px 76px;
+}
+
+.rich-editor {
+min-height: calc(100dvh - 240px);
+padding-top: 13px;
+font-size: 0.98rem;
+}
+
+.editor-footer {
+right: 9px;
+bottom: 8px;
+left: 9px;
+}
+
+.tag-input-row input {
+width: 105px;
+}
+
+.statistics-row span:first-child {
+display: none;
+}
+
+.auth-card {
+padding: 27px 21px;
+}
+
+.auth-secondary {
+grid-template-columns: 1fr;
+}
+
+.drawer {
+width: calc(100% - 16px);
+height: calc(100dvh - 16px);
+
+top: 8px;
+right: 8px;
+}
+}
+
+@media (min-width: 701px) {
+.mobile-back-button {
+display: none !important;
+}
+}
+
+@media (max-width: 430px) {
+.search-shortcut {
+display: none;
+}
+
+.global-search input {
+padding-right: 12px;
+}
+
+.editor-footer {
+align-items: flex-start;
+flex-direction: column;
+gap: 4px;
+}
+
+.tag-input-row {
+width: 100%;
+}
+
+.tag-input-row input {
+width: 100%;
+}
+
+.statistics-row {
+width: 100%;
+justify-content: flex-end;
+}
+
+.modal-actions {
+display: grid;
+grid-template-columns: 1fr 1fr;
+}
+
+.modal-actions .button {
+width: 100%;
+}
+}
+
+@media (prefers-reduced-motion: reduce) {
+*,
+*::before,
+*::after {
+scroll-behavior: auto !important;
+animation-duration: 0.01ms !important;
+animation-iteration-count: 1 !important;
+transition-duration: 0.01ms !important;
+}
+}
+</style>
+</head>
+
+<body>
+<!-- =======================================================
+AUTHENTICATION SCREEN
+======================================================= -->
+
+<section id="authScreen" class="auth-screen">
+<div class="auth-orb one"></div>
+<div class="auth-orb two"></div>
+
+<div class="auth-card">
+<div class="auth-brand">
+<div class="brand-mark" aria-hidden="true">✦</div>
+
+<div>
+<h1>Mayborg Vault</h1>
+<p>Private notes. Thoughtful journaling.</p>
+</div>
+</div>
+
+<!-- New vault setup -->
+
+<div id="setupPanel" class="hidden">
+<h2 class="auth-title">Create your secure vault</h2>
+
+<p class="auth-description">
+Your notes, journal entries and images are encrypted before
+being stored on this device.
+</p>
+
+<div class="field">
+<label for="setupName">Display name</label>
+
+<input
+id="setupName"
+type="text"
+value="Mayur"
+maxlength="60"
+autocomplete="name"
+>
+</div>
+
+<div class="field">
+<label for="setupPassword">Create vault password</label>
+
+<div class="password-container">
+<input
+id="setupPassword"
+type="password"
+minlength="8"
+placeholder="Minimum 8 characters"
+autocomplete="new-password"
+>
+
+<button
+class="icon-button password-toggle"
+type="button"
+data-password-target="setupPassword"
+title="Show or hide password"
+>
+<span class="icon">◉</span>
+</button>
+</div>
+</div>
+
+<div class="field">
+<label for="setupPasswordConfirm">Confirm password</label>
+
+<div class="password-container">
+<input
+id="setupPasswordConfirm"
+type="password"
+minlength="8"
+placeholder="Enter the password again"
+autocomplete="new-password"
+>
+
+<button
+class="icon-button password-toggle"
+type="button"
+data-password-target="setupPasswordConfirm"
+title="Show or hide password"
+>
+<span class="icon">◉</span>
+</button>
+</div>
+</div>
+
+<div class="auth-actions">
+<button id="createVaultButton" class="button primary block">
+<span class="icon">🔐</span>
+Create encrypted vault
+</button>
+</div>
+
+<div class="auth-secondary">
+<button id="setupImportButton" class="button ghost">
+<span class="icon small">↑</span>
+Import existing vault
+</button>
+
+<button id="setupDemoButton" class="button ghost">
+<span class="icon small">✦</span>
+Include sample notes
+</button>
+</div>
+</div>
+
+<!-- Unlock existing vault -->
+
+<div id="unlockPanel" class="hidden">
+<h2 class="auth-title">Welcome back</h2>
+
+<p class="auth-description">
+Enter your password to decrypt and open your private vault.
+</p>
+
+<div class="field">
+<label for="unlockPassword">Vault password</label>
+
+<div class="password-container">
+<input
+id="unlockPassword"
+type="password"
+placeholder="Enter your password"
+autocomplete="current-password"
+>
+
+<button
+class="icon-button password-toggle"
+type="button"
+data-password-target="unlockPassword"
+title="Show or hide password"
+>
+<span class="icon">◉</span>
+</button>
+</div>
+</div>
+
+<div class="auth-actions">
+<button id="unlockButton" class="button primary block">
+<span class="icon">🔓</span>
+Unlock vault
+</button>
+</div>
+
+<div class="auth-secondary">
+<button id="unlockImportButton" class="button ghost">
+<span class="icon small">↑</span>
+Import vault
+</button>
+
+<button id="resetVaultButton" class="button ghost">
+<span class="icon small">⌫</span>
+Reset local vault
+</button>
+</div>
+</div>
+
+<!-- Imported vault password -->
+
+<div id="importPasswordPanel" class="hidden">
+<h2 class="auth-title">Open imported vault</h2>
+
+<p id="importFileDescription" class="auth-description">
+Enter the password used to encrypt the selected vault file.
+</p>
+
+<div class="field">
+<label for="importPassword">File password</label>
+
+<div class="password-container">
+<input
+id="importPassword"
+type="password"
+placeholder="Enter the vault password"
+autocomplete="current-password"
+>
+
+<button
+class="icon-button password-toggle"
+type="button"
+data-password-target="importPassword"
+title="Show or hide password"
+>
+<span class="icon">◉</span>
+</button>
+</div>
+</div>
+
+<div class="auth-actions">
+<button
+id="openImportedVaultButton"
+class="button primary block"
+>
+<span class="icon">🔓</span>
+Decrypt and open
+</button>
+
+<button id="cancelImportButton" class="button ghost block">
+Cancel
+</button>
+</div>
+</div>
+
+<div id="authMessage" class="auth-message"></div>
+
+<div class="security-notice">
+<span class="icon small">🔒</span>
+
+<span>
+AES-GCM encryption with a password-derived key. Your
+unencrypted content stays inside this browser.
+</span>
+</div>
+</div>
+</section>
+
+<!-- =======================================================
+MAIN APPLICATION
+======================================================= -->
+
+<main id="application" class="application locked">
+<!-- Header -->
+
+<header class="topbar">
+<div class="topbar-brand">
+<button
+id="mobileSidebarButton"
+class="icon-button mobile-sidebar-button"
+title="Open navigation"
+>
+<span class="icon">☰</span>
+</button>
+
+<div class="brand-mark" aria-hidden="true">✦</div>
+
+<div class="brand-copy">
+<strong>Mayborg Vault</strong>
+<span>Encrypted workspace</span>
+</div>
+</div>
+
+<div class="global-search">
+<span class="icon search-icon">⌕</span>
+
+<input
+id="searchInput"
+type="search"
+placeholder="Search notes, content or tags..."
+autocomplete="off"
+>
+
+<span class="search-shortcut">Ctrl K</span>
+</div>
+
+<div class="topbar-actions">
+<div id="saveStatus" class="save-status">
+<span class="save-dot"></span>
+<span id="saveStatusText">Saved</span>
+</div>
+
+<button
+id="quickThemeButton"
+class="icon-button"
+title="Toggle dark mode"
+>
+<span id="quickThemeIcon" class="icon">☾</span>
+</button>
+
+<button
+id="lockButton"
+class="icon-button"
+title="Lock vault"
+>
+<span class="icon">🔒</span>
+</button>
+
+<button
+id="menuButton"
+class="icon-button"
+title="Open menu"
+>
+<span class="icon">☰</span>
+</button>
+</div>
+</header>
+
+<!-- Sidebar -->
+
+<aside id="sidebar" class="sidebar">
+<div class="sidebar-scroll">
+<button id="newNoteButton" class="button primary block">
+<span class="icon">＋</span>
+New note
+</button>
+
+<section class="navigation-section">
+<p class="navigation-label">Workspace</p>
+
+<button
+class="navigation-item active"
+data-view="all"
+>
+<span class="icon">▤</span>
+All notes
+<span id="allCount" class="navigation-count">0</span>
+</button>
+
+<button
+class="navigation-item"
+data-view="journal"
+>
+<span class="icon">◫</span>
+Journal
+<span id="journalCount" class="navigation-count">0</span>
+</button>
+
+<button
+class="navigation-item"
+data-view="favorites"
+>
+<span class="icon">☆</span>
+Favorites
+<span id="favoriteCount" class="navigation-count">0</span>
+</button>
+
+<button
+class="navigation-item"
+data-view="pinned"
+>
+<span class="icon">⌖</span>
+Pinned
+<span id="pinnedCount" class="navigation-count">0</span>
+</button>
+
+<button
+class="navigation-item"
+data-view="trash"
+>
+<span class="icon">⌫</span>
+Trash
+<span id="trashCount" class="navigation-count">0</span>
+</button>
+</section>
+
+<section class="navigation-section">
+<p class="navigation-label">Quick create</p>
+
+<button id="quickNoteButton" class="navigation-item">
+<span class="icon">▤</span>
+Blank note
+</button>
+
+<button id="quickJournalButton" class="navigation-item">
+<span class="icon">◫</span>
+Today’s journal
+</button>
+</section>
+
+<section class="navigation-section">
+<p class="navigation-label">Tags</p>
+
+<div id="tagsNavigation"></div>
+</section>
+</div>
+
+<div class="sidebar-profile">
+<div id="sidebarAvatar" class="avatar">M</div>
+
+<div class="profile-copy">
+<strong id="sidebarProfileName">Mayur</strong>
+<span>Vault owner</span>
+</div>
+
+<button
+id="sidebarSettingsButton"
+class="icon-button"
+title="Settings"
+>
+<span class="icon">⚙</span>
+</button>
+</div>
+</aside>
+
+<!-- Notes list -->
+
+<section class="notes-panel">
+<div class="notes-header">
+<div class="notes-heading">
+<h2 id="viewTitle">All notes</h2>
+<span id="visibleNoteCount">0 notes</span>
+</div>
+
+<div class="notes-controls">
+<select id="sortSelect" aria-label="Sort notes">
+<option value="updated-desc">Recently updated</option>
+<option value="created-desc">Recently created</option>
+<option value="title-asc">Title A to Z</option>
+<option value="title-desc">Title Z to A</option>
+</select>
+
+<button
+id="notesNewButton"
+class="icon-button active"
+title="New note"
+>
+<span class="icon">＋</span>
+</button>
+</div>
+</div>
+
+<div id="notesList" class="notes-list"></div>
+</section>
+
+<!-- Editor -->
+
+<section class="editor-panel">
+<div id="editorEmpty" class="editor-empty">
+<div class="editor-empty-card">
+<div class="editor-empty-graphic">▤</div>
+
+<h2>Your ideas belong here</h2>
+
+<p>
+Create an encrypted note, begin today’s journal, or select
+an existing item from the note list.
+</p>
+
+<button id="emptyCreateButton" class="button primary">
+<span class="icon">＋</span>
+Create a note
+</button>
+</div>
+</div>
+
+<div id="editorShell" class="editor-shell hidden">
+<div class="editor-meta">
+<div class="title-row">
+<button
+id="mobileBackButton"
+class="icon-button mobile-back-button"
+title="Back to notes"
+>
+<span class="icon">‹</span>
+</button>
+
+<input
+id="noteTitleInput"
+class="note-title-input"
+type="text"
+placeholder="Untitled note"
+maxlength="180"
+>
+
+<button
+id="favoriteButton"
+class="icon-button"
+title="Add to favorites"
+>
+<span class="icon">☆</span>
+</button>
+
+<button
+id="pinButton"
+class="icon-button"
+title="Pin note"
+>
+<span class="icon">⌖</span>
+</button>
+
+<button
+id="noteMoreButton"
+class="icon-button"
+title="More actions"
+>
+<span class="icon">•••</span>
+</button>
+</div>
+
+<div class="note-submeta">
+<span class="note-submeta-item">
+<span class="icon small">◫</span>
+<span id="noteDateLabel">Created today</span>
+</span>
+
+<span id="noteTypeLabel" class="note-type-badge">
+Note
+</span>
+
+<div
+id="journalMoodSection"
+class="journal-mood hidden"
+>
+<span>Mood:</span>
+
+<button
+class="mood-button"
+data-mood="great"
+title="Great"
+>
+😄
+</button>
+
+<button
+class="mood-button"
+data-mood="good"
+title="Good"
+>
+🙂
+</button>
+
+<button
+class="mood-button"
+data-mood="neutral"
+title="Neutral"
+>
+😐
+</button>
+
+<button
+class="mood-button"
+data-mood="low"
+title="Low"
+>
+😔
+</button>
+
+<button
+class="mood-button"
+data-mood="difficult"
+title="Difficult"
+>
+😣
+</button>
+</div>
+</div>
+</div>
+
+<!-- Formatting toolbar -->
+
+<div class="toolbar-wrapper">
+<div
+class="toolbar"
+role="toolbar"
+aria-label="Text formatting"
+>
+<button
+class="toolbar-button"
+data-command="undo"
+title="Undo"
+>
+↶
+</button>
+
+<button
+class="toolbar-button"
+data-command="redo"
+title="Redo"
+>
+↷
+</button>
+
+<div class="toolbar-divider"></div>
+
+<select
+id="formatBlockSelect"
+class="toolbar-select"
+title="Text style"
+>
+<option value="p">Paragraph</option>
+<option value="h1">Heading 1</option>
+<option value="h2">Heading 2</option>
+<option value="h3">Heading 3</option>
+<option value="blockquote">Quote</option>
+<option value="pre">Code block</option>
+</select>
+
+<div class="toolbar-divider"></div>
+
+<button
+class="toolbar-button"
+data-command="bold"
+title="Bold"
+>
+B
+</button>
+
+<button
+class="toolbar-button"
+data-command="italic"
+title="Italic"
+>
+<em>I</em>
+</button>
+
+<button
+class="toolbar-button"
+data-command="underline"
+title="Underline"
+>
+<u>U</u>
+</button>
+
+<button
+class="toolbar-button"
+data-command="strikeThrough"
+title="Strikethrough"
+>
+<s>S</s>
+</button>
+
+<div class="toolbar-divider"></div>
+
+<button
+class="toolbar-button"
+data-command="insertUnorderedList"
+title="Bulleted list"
+>
+•≡
+</button>
+
+<button
+class="toolbar-button"
+data-command="insertOrderedList"
+title="Numbered list"
+>
+1.
+</button>
+
+<button
+class="toolbar-button"
+data-command="formatBlock"
+data-value="blockquote"
+title="Quote"
+>
+“
+</button>
+
+<div class="toolbar-divider"></div>
+
+<button
+class="toolbar-button"
+data-command="justifyLeft"
+title="Align left"
+>
+≡
+</button>
+
+<button
+class="toolbar-button"
+data-command="justifyCenter"
+title="Align center"
+>
+≣
+</button>
+
+<button
+class="toolbar-button"
+data-command="justifyRight"
+title="Align right"
+>
+≡
+</button>
+
+<div class="toolbar-divider"></div>
+
+<div class="color-button-container">
+<button
+id="textColorButton"
+class="toolbar-button"
+title="Text color"
+>
+A
+</button>
+
+<input
+id="textColorInput"
+type="color"
+value="#6c5ce7"
+>
+</div>
+
+<div class="color-button-container">
+<button
+id="highlightColorButton"
+class="toolbar-button"
+title="Highlight color"
+>
+▰
+</button>
+
+<input
+id="highlightColorInput"
+type="color"
+value="#fff0a6"
+>
+</div>
+
+<button
+id="linkButton"
+class="toolbar-button"
+title="Insert link"
+>
+🔗
+</button>
+
+<button
+id="imageButton"
+class="toolbar-button"
+title="Insert image"
+>
+🖼
+</button>
+
+<button
+class="toolbar-button"
+data-command="removeFormat"
+title="Clear formatting"
+>
+Tx
+</button>
+</div>
+</div>
+
+<div class="editor-scroll">
+<article
+id="richEditor"
+class="rich-editor"
+contenteditable="true"
+spellcheck="true"
+data-placeholder="Start writing. You can also drag, drop or paste images here..."
+></article>
+</div>
+
+<div class="editor-footer">
+<div class="tag-input-row">
+<span class="icon small">#</span>
+
+<input
+id="tagsInput"
+type="text"
+placeholder="Tags separated by commas"
+aria-label="Note tags"
+>
+</div>
+
+<div class="statistics-row">
+<span id="readingTime">0 min read</span>
+<span id="wordCount">0 words</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+
+<div id="mobileOverlay" class="mobile-overlay"></div>
+
+<!-- =======================================================
+HAMBURGER DRAWER
+======================================================= -->
+
+<div id="drawerOverlay" class="drawer-overlay"></div>
+
+<aside id="drawer" class="drawer">
+<div class="drawer-header">
+<div id="drawerAvatar" class="avatar">M</div>
+
+<div class="drawer-header-copy">
+<strong id="drawerProfileName">Mayur</strong>
+<span>Encrypted local vault</span>
+</div>
+
+<button
+id="closeDrawerButton"
+class="icon-button"
+title="Close menu"
+>
+<span class="icon">×</span>
+</button>
+</div>
+
+<div class="drawer-scroll">
+<section class="drawer-section">
+<p class="drawer-section-title">Account</p>
+
+<button id="profileMenuButton" class="drawer-menu-button">
+<span class="icon">♙</span>
+<span>Edit profile</span>
+<small>Name and picture</small>
+</button>
+
+<button
+id="changePasswordMenuButton"
+class="drawer-menu-button"
+>
+<span class="icon">⚿</span>
+<span>Change vault password</span>
+<small>Re-encrypt vault</small>
+</button>
+
+<button id="drawerLockButton" class="drawer-menu-button">
+<span class="icon">🔒</span>
+<span>Lock vault now</span>
+<small>Ctrl Shift L</small>
+</button>
+</section>
+
+<section class="drawer-section">
+<p class="drawer-section-title">Appearance</p>
+
+<div class="theme-row">
+<button class="theme-choice" data-theme="light">
+☀ Light
+</button>
+
+<button class="theme-choice" data-theme="dark">
+☾ Dark
+</button>
+
+<button class="theme-choice" data-theme="system">
+◐ System
+</button>
+</div>
+
+<p
+class="drawer-section-title"
+style="margin-top: 15px"
+>
+Accent color
+</p>
+
+<div class="accent-grid">
+<button
+class="accent-choice"
+data-accent="#6c5ce7"
+data-rgb="108,92,231"
+style="--swatch: #6c5ce7"
+title="Violet"
+></button>
+
+<button
+class="accent-choice"
+data-accent="#e04f9f"
+data-rgb="224,79,159"
+style="--swatch: #e04f9f"
+title="Pink"
+></button>
+
+<button
+class="accent-choice"
+data-accent="#e8643f"
+data-rgb="232,100,63"
+style="--swatch: #e8643f"
+title="Orange"
+></button>
+
+<button
+class="accent-choice"
+data-accent="#dfa421"
+data-rgb="223,164,33"
+style="--swatch: #dfa421"
+title="Gold"
+></button>
+
+<button
+class="accent-choice"
+data-accent="#18a780"
+data-rgb="24,167,128"
+style="--swatch: #18a780"
+title="Emerald"
+></button>
+
+<button
+class="accent-choice"
+data-accent="#238bd1"
+data-rgb="35,139,209"
+style="--swatch: #238bd1"
+title="Blue"
+></button>
+
+<button
+class="accent-choice"
+data-accent="#6f7789"
+data-rgb="111,119,137"
+style="--swatch: #6f7789"
+title="Slate"
+></button>
+</div>
+</section>
+
+<section class="drawer-section">
+<p class="drawer-section-title">Vault and backups</p>
+
+<button
+id="saveNowMenuButton"
+class="drawer-menu-button"
+>
+<span class="icon">✓</span>
+<span>Save encrypted vault</span>
+<small>Save now</small>
+</button>
+
+<button
+id="exportMenuButton"
+class="drawer-menu-button"
+>
+<span class="icon">↓</span>
+<span>Export encrypted backup</span>
+<small>.mayborg file</small>
+</button>
+
+<button
+id="importMenuButton"
+class="drawer-menu-button"
+>
+<span class="icon">↑</span>
+<span>Import encrypted backup</span>
+<small>Replace vault</small>
+</button>
+
+<button
+id="exportCsvMenuButton"
+class="drawer-menu-button"
+>
+<span class="icon">⇩</span>
+<span>Export readable CSV</span>
+<small>Unencrypted</small>
+</button>
+</section>
+
+<section class="drawer-section">
+<p class="drawer-section-title">Help and information</p>
+
+<button
+id="shortcutsMenuButton"
+class="drawer-menu-button"
+>
+<span class="icon">⌨</span>
+<span>Keyboard shortcuts</span>
+<small>Productivity guide</small>
+</button>
+
+<button
+id="aboutMenuButton"
+class="drawer-menu-button"
+>
+<span class="icon">ⓘ</span>
+<span>About Mayborg Vault</span>
+<small>Security details</small>
+</button>
+</section>
+</div>
+
+<footer class="drawer-footer">
+Made with ❤️ by MAYBORG
+</footer>
+</aside>
+
+<!-- =======================================================
+MODAL
+======================================================= -->
+
+<div id="modalOverlay" class="modal-overlay">
+<section class="modal">
+<div class="modal-header">
+<div class="modal-header-copy">
+<h3 id="modalTitle">Settings</h3>
+<p id="modalDescription"></p>
+</div>
+
+<button
+id="modalCloseButton"
+class="icon-button"
+title="Close"
+>
+<span class="icon">×</span>
+</button>
+</div>
+
+<div id="modalBody" class="modal-body"></div>
+<div id="modalActions" class="modal-actions"></div>
+</section>
+</div>
+
+<!-- Note context menu -->
+
+<div id="contextMenu" class="context-menu">
+<button data-context-action="duplicate">
+<span class="icon small">▣</span>
+Duplicate
+</button>
+
+<button data-context-action="toggle-type">
+<span class="icon small">◫</span>
+Convert note or journal
+</button>
+
+<button data-context-action="restore" class="hidden">
+<span class="icon small">↟</span>
+Restore note
+</button>
+
+<button data-context-action="export-html">
+<span class="icon small">↓</span>
+Export as HTML
+</button>
+
+<button
+class="danger"
+data-context-action="delete"
+>
+<span class="icon small">⌫</span>
+Move to trash
+</button>
+</div>
+
+<div id="toastContainer" class="toast-container"></div>
+
+<!-- Hidden file inputs -->
+
+<input
+id="vaultFileInput"
+class="hidden"
+type="file"
+accept=".mayborg,.json,application/json"
+>
+
+<input
+id="imageFileInput"
+class="hidden"
+type="file"
+accept="image/*"
+multiple
+>
+
+<input
+id="profileImageInput"
+class="hidden"
+type="file"
+accept="image/*"
+>
+
+<script>
+"use strict";
+
+/* =========================================================
+APPLICATION CONSTANTS
+========================================================= */
+
+const APP_VERSION = "2.0.0";
+
+const DATABASE_NAME = "MayborgVaultDatabase";
+const DATABASE_VERSION = 1;
+const DATABASE_STORE = "vault";
+const DATABASE_KEY = "primary";
+
+const PBKDF2_ITERATIONS = 250000;
+const DEFAULT_AUTO_LOCK_MINUTES = 15;
+
+/* =========================================================
+STATE
+========================================================= */
+
+const state = {
+vault: null,
+password: "",
+
+selectedNoteId: null,
+currentView: "all",
+selectedTag: null,
+
+searchQuery: "",
+sortMode: "updated-desc",
+
+saveTimer: null,
+editorRenderTimer: null,
+
+pendingImportedRecord: null,
+contextNoteId: null,
+
+lastActivity: Date.now(),
+createDemoContent: false,
+
+savedSelectionRange: null
+};
+
+/* =========================================================
+DOM HELPERS
+========================================================= */
+
+const $ = (selector, root = document) => {
+return root.querySelector(selector);
+};
+
+const $$ = (selector, root = document) => {
+return Array.from(root.querySelectorAll(selector));
+};
+
+const elements = {
+authScreen: $("#authScreen"),
+setupPanel: $("#setupPanel"),
+unlockPanel: $("#unlockPanel"),
+importPasswordPanel: $("#importPasswordPanel"),
+
+authMessage: $("#authMessage"),
+
+setupName: $("#setupName"),
+setupPassword: $("#setupPassword"),
+setupPasswordConfirm: $("#setupPasswordConfirm"),
+
+unlockPassword: $("#unlockPassword"),
+
+importPassword: $("#importPassword"),
+importFileDescription: $("#importFileDescription"),
+
+application: $("#application"),
+
+sidebar: $("#sidebar"),
+mobileOverlay: $("#mobileOverlay"),
+
+searchInput: $("#searchInput"),
+
+saveStatus: $("#saveStatus"),
+saveStatusText: $("#saveStatusText"),
+
+notesList: $("#notesList"),
+viewTitle: $("#viewTitle"),
+visibleNoteCount: $("#visibleNoteCount"),
+sortSelect: $("#sortSelect"),
+
+tagsNavigation: $("#tagsNavigation"),
+
+allCount: $("#allCount"),
+journalCount: $("#journalCount"),
+favoriteCount: $("#favoriteCount"),
+pinnedCount: $("#pinnedCount"),
+trashCount: $("#trashCount"),
+
+editorEmpty: $("#editorEmpty"),
+editorShell: $("#editorShell"),
+
+noteTitleInput: $("#noteTitleInput"),
+richEditor: $("#richEditor"),
+tagsInput: $("#tagsInput"),
+
+favoriteButton: $("#favoriteButton"),
+pinButton: $("#pinButton"),
+
+noteDateLabel: $("#noteDateLabel"),
+noteTypeLabel: $("#noteTypeLabel"),
+
+journalMoodSection: $("#journalMoodSection"),
+
+wordCount: $("#wordCount"),
+readingTime: $("#readingTime"),
+
+drawer: $("#drawer"),
+drawerOverlay: $("#drawerOverlay"),
+
+sidebarAvatar: $("#sidebarAvatar"),
+drawerAvatar: $("#drawerAvatar"),
+
+sidebarProfileName: $("#sidebarProfileName"),
+drawerProfileName: $("#drawerProfileName"),
+
+modalOverlay: $("#modalOverlay"),
+modalTitle: $("#modalTitle"),
+modalDescription: $("#modalDescription"),
+modalBody: $("#modalBody"),
+modalActions: $("#modalActions"),
+
+contextMenu: $("#contextMenu"),
+
+toastContainer: $("#toastContainer"),
+
+vaultFileInput: $("#vaultFileInput"),
+imageFileInput: $("#imageFileInput"),
+profileImageInput: $("#profileImageInput"),
+
+quickThemeIcon: $("#quickThemeIcon")
+};
+
+/* =========================================================
+GENERAL HELPERS
+========================================================= */
+
+function generateId(prefix = "item") {
+if (
+window.crypto &&
+typeof window.crypto.randomUUID === "function"
+) {
+return prefix + "_" + window.crypto.randomUUID();
+}
+
+return (
+prefix +
+"_" +
+Date.now() +
+"_" +
+Math.random().toString(36).slice(2)
+);
+}
+
+function escapeHtml(value) {
+return String(value ?? "")
+.replaceAll("&", "&amp;")
+.replaceAll("<", "&lt;")
+.replaceAll(">", "&gt;")
+.replaceAll('"', "&quot;")
+.replaceAll("'", "&#039;");
+}
+
+function stripHtml(html) {
+const temporary = document.createElement("div");
+temporary.innerHTML = html || "";
+
+return (
+temporary.textContent ||
+temporary.innerText ||
+""
+)
+.replace(/\s+/g, " ")
+.trim();
+}
+
+function normalizeTags(value) {
+const input = Array.isArray(value)
+? value.join(",")
+: String(value || "");
+
+return [
+...new Set(
+input
+.split(",")
+.map((tag) => tag.trim().toLowerCase())
+.filter(Boolean)
+)
+].slice(0, 20);
+}
+
+function getInitials(name) {
+return (
+String(name || "M")
+.trim()
+.split(/\s+/)
+.slice(0, 2)
+.map((part) => part.charAt(0).toUpperCase())
+.join("") || "M"
+);
+}
+
+function formatJournalTitle(date) {
+const formattedDate = new Intl.DateTimeFormat(
+"en-US",
+{
+month: "long",
+day: "numeric",
+year: "numeric"
+}
+).format(date);
+
+return "Journal · " + formattedDate;
+}
+
+function formatRelativeDate(isoDate) {
+const timestamp = new Date(isoDate).getTime();
+const difference = Date.now() - timestamp;
+
+const minutes = Math.floor(difference / 60000);
+const hours = Math.floor(difference / 3600000);
+const days = Math.floor(difference / 86400000);
+
+if (minutes < 1) {
+return "Just now";
+}
+
+if (minutes < 60) {
+return minutes + "m ago";
+}
+
+if (hours < 24) {
+return hours + "h ago";
+}
+
+if (days < 7) {
+return days + "d ago";
+}
+
+const date = new Date(isoDate);
+
+return new Intl.DateTimeFormat(
+"en-US",
+{
+month: "short",
+day: "numeric",
+year:
+date.getFullYear() !== new Date().getFullYear()
+? "numeric"
+: undefined
+}
+).format(date);
+}
+
+function getSelectedNote() {
+if (!state.vault) {
+return null;
+}
+
+return (
+state.vault.notes.find(
+(note) => note.id === state.selectedNoteId
+) || null
+);
+}
+
+/* =========================================================
+INDEXEDDB
+========================================================= */
+
+function openDatabase() {
+return new Promise((resolve, reject) => {
+if (!window.indexedDB) {
+reject(
+new Error(
+"IndexedDB is unavailable in this browser."
+)
+);
+
+return;
+}
+
+const request = indexedDB.open(
+DATABASE_NAME,
+DATABASE_VERSION
+);
+
+request.onupgradeneeded = () => {
+const database = request.result;
+
+if (
+!database.objectStoreNames.contains(
+DATABASE_STORE
+)
+) {
+database.createObjectStore(DATABASE_STORE);
+}
+};
+
+request.onsuccess = () => {
+resolve(request.result);
+};
+
+request.onerror = () => {
+reject(
+request.error ||
+new Error("Could not open local storage.")
+);
+};
+});
+}
+
+async function readStoredVault() {
+const database = await openDatabase();
+
+return new Promise((resolve, reject) => {
+const transaction = database.transaction(
+DATABASE_STORE,
+"readonly"
+);
+
+const store = transaction.objectStore(
+DATABASE_STORE
+);
+
+const request = store.get(DATABASE_KEY);
+
+request.onsuccess = () => {
+resolve(request.result || null);
+};
+
+request.onerror = () => {
+reject(request.error);
+};
+
+transaction.oncomplete = () => {
+database.close();
+};
+
+transaction.onerror = () => {
+database.close();
+reject(transaction.error);
+};
+});
+}
+
+async function writeStoredVault(record) {
+const database = await openDatabase();
+
+return new Promise((resolve, reject) => {
+const transaction = database.transaction(
+DATABASE_STORE,
+"readwrite"
+);
+
+const store = transaction.objectStore(
+DATABASE_STORE
+);
+
+store.put(record, DATABASE_KEY);
+
+transaction.oncomplete = () => {
+database.close();
+resolve();
+};
+
+transaction.onerror = () => {
+database.close();
+
+reject(
+transaction.error ||
+new Error("Could not save the encrypted vault.")
+);
+};
+});
+}
+
+async function removeStoredVault() {
+const database = await openDatabase();
+
+return new Promise((resolve, reject) => {
+const transaction = database.transaction(
+DATABASE_STORE,
+"readwrite"
+);
+
+const store = transaction.objectStore(
+DATABASE_STORE
+);
+
+store.delete(DATABASE_KEY);
+
+transaction.oncomplete = () => {
+database.close();
+resolve();
+};
+
+transaction.onerror = () => {
+database.close();
+reject(transaction.error);
+};
+});
+}
+
+/* =========================================================
+ENCRYPTION
+========================================================= */
+
+function bytesToBase64(bytes) {
+let binary = "";
+const chunkSize = 0x8000;
+
+for (
+let index = 0;
+index < bytes.length;
+index += chunkSize
+) {
+binary += String.fromCharCode(
+...bytes.subarray(index, index + chunkSize)
+);
+}
+
+return btoa(binary);
+}
+
+function base64ToBytes(base64) {
+const binary = atob(base64);
+const bytes = new Uint8Array(binary.length);
+
+for (
+let index = 0;
+index < binary.length;
+index++
+) {
+bytes[index] = binary.charCodeAt(index);
+}
+
+return bytes;
+}
+
+async function deriveEncryptionKey(
+password,
+salt,
+usages,
+iterations = PBKDF2_ITERATIONS
+) {
+const encoder = new TextEncoder();
+
+const sourceKey = await crypto.subtle.importKey(
+"raw",
+encoder.encode(password),
+{
+name: "PBKDF2"
+},
+false,
+["deriveKey"]
+);
+
+return crypto.subtle.deriveKey(
+{
+name: "PBKDF2",
+salt,
+iterations,
+hash: "SHA-256"
+},
+sourceKey,
+{
+name: "AES-GCM",
+length: 256
+},
+false,
+usages
+);
+}
+
+async function encryptVault(vault, password) {
+if (
+!window.crypto ||
+!window.crypto.subtle
+) {
+throw new Error(
+"Web Crypto is unavailable. Open the app in a modern secure browser."
+);
+}
+
+const encoder = new TextEncoder();
+
+const salt = crypto.getRandomValues(
+new Uint8Array(16)
+);
+
+const initializationVector = crypto.getRandomValues(
+new Uint8Array(12)
+);
+
+const encryptionKey = await deriveEncryptionKey(
+password,
+salt,
+["encrypt"],
+PBKDF2_ITERATIONS
+);
+
+const plaintext = encoder.encode(
+JSON.stringify(vault)
+);
+
+const encryptedData = await crypto.subtle.encrypt(
+{
+name: "AES-GCM",
+iv: initializationVector
+},
+encryptionKey,
+plaintext
+);
+
+return {
+format: "MAYBORG_ENCRYPTED_VAULT",
+fileVersion: 1,
+appVersion: APP_VERSION,
+
+algorithm: "AES-GCM",
+keyDerivation: "PBKDF2-SHA256",
+iterations: PBKDF2_ITERATIONS,
+
+salt: bytesToBase64(salt),
+iv: bytesToBase64(initializationVector),
+
+data: bytesToBase64(
+new Uint8Array(encryptedData)
+),
+
+updatedAt: new Date().toISOString()
+};
+}
+
+async function decryptVault(record, password) {
+validateEncryptedRecord(record);
+
+const decoder = new TextDecoder();
+
+const salt = base64ToBytes(record.salt);
+const initializationVector = base64ToBytes(
+record.iv
+);
+
+const encryptedData = base64ToBytes(record.data);
+
+const iterations =
+Number(record.iterations) ||
+PBKDF2_ITERATIONS;
+
+const decryptionKey = await deriveEncryptionKey(
+password,
+salt,
+["decrypt"],
+iterations
+);
+
+const plaintext = await crypto.subtle.decrypt(
+{
+name: "AES-GCM",
+iv: initializationVector
+},
+decryptionKey,
+encryptedData
+);
+
+const vault = JSON.parse(
+decoder.decode(plaintext)
+);
+
+validateVaultData(vault);
+
+return vault;
+}
+
+function validateEncryptedRecord(record) {
+if (
+!record ||
+record.format !== "MAYBORG_ENCRYPTED_VAULT" ||
+!record.salt ||
+!record.iv ||
+!record.data
+) {
+throw new Error(
+"The selected file is not a valid Mayborg vault."
+);
+}
+}
+
+function validateVaultData(vault) {
+if (
+!vault ||
+!Array.isArray(vault.notes) ||
+!vault.profile
+) {
+throw new Error(
+"The decrypted vault structure is invalid."
+);
+}
+}
+
+/* =========================================================
+VAULT FACTORIES
+========================================================= */
+
+function createEmptyVault(displayName = "Mayur") {
+const timestamp = new Date().toISOString();
+
+return {
+vaultVersion: 1,
+
+createdAt: timestamp,
+updatedAt: timestamp,
+
+profile: {
+name: displayName.trim() || "Mayur",
+avatar: ""
+},
+
+settings: {
+theme: "system",
+accent: "#6c5ce7",
+accentRgb: "108,92,231",
+autoLockMinutes: DEFAULT_AUTO_LOCK_MINUTES
+},
+
+notes: []
+};
+}
+
+function createNote(type = "note") {
+const now = new Date();
+const timestamp = now.toISOString();
+
+return {
+id: generateId(type),
+
+type,
+
+title:
+type === "journal"
+? formatJournalTitle(now)
+: "",
+
+content:
+type === "journal"
+? "<h2>Today’s reflection</h2><p><br></p>"
+: "",
+
+tags:
+type === "journal"
+? ["journal"]
+: [],
+
+favorite: false,
+pinned: false,
+deleted: false,
+
+mood:
+type === "journal"
+? "neutral"
+: "",
+
+createdAt: timestamp,
+updatedAt: timestamp
+};
+}
+
+function createSampleNotes() {
+const now = Date.now();
+
+return [
+{
+id: generateId("note"),
+type: "note",
+
+title: "Welcome to Mayborg Vault",
+
+content:
+"<h2>Your private writing space</h2>" +
+"<p>This vault stores your notes in encrypted form on this device.</p>" +
+"<blockquote>Ideas become useful when they have a safe place to grow.</blockquote>" +
+"<p>Try the formatting toolbar, create tags, switch themes, or drag an image directly into the editor.</p>" +
+"<h3>Useful shortcuts</h3>" +
+"<ul>" +
+"<li><strong>Ctrl + N</strong> creates a note</li>" +
+"<li><strong>Ctrl + S</strong> encrypts and saves</li>" +
+"<li><strong>Ctrl + K</strong> opens search</li>" +
+"</ul>",
+
+tags: ["welcome", "guide"],
+
+favorite: true,
+pinned: true,
+deleted: false,
+
+mood: "",
+
+createdAt:
+new Date(now - 60000).toISOString(),
+
+updatedAt:
+new Date(now - 60000).toISOString()
+},
+
+{
+id: generateId("journal"),
+type: "journal",
+
+title: formatJournalTitle(new Date()),
+
+content:
+"<h2>Today’s reflection</h2>" +
+"<p><strong>What went well today?</strong></p>" +
+"<p><br></p>" +
+"<p><strong>What did I learn?</strong></p>" +
+"<p><br></p>" +
+"<p><strong>What deserves my attention tomorrow?</strong></p>",
+
+tags: ["journal", "reflection"],
+
+favorite: false,
+pinned: false,
+deleted: false,
+
+mood: "good",
+
+createdAt:
+new Date(now - 30000).toISOString(),
+
+updatedAt:
+new Date(now - 30000).toISOString()
+}
+];
+}
+
+function normalizeLoadedVault() {
+const defaults = createEmptyVault(
+state.vault?.profile?.name || "Mayur"
+);
+
+state.vault.profile = {
+...defaults.profile,
+...(state.vault.profile || {})
+};
+
+state.vault.settings = {
+...defaults.settings,
+...(state.vault.settings || {})
+};
+
+state.vault.notes = (
+state.vault.notes || []
+).map((note) => {
+return {
+id: note.id || generateId("note"),
+
+type:
+note.type === "journal"
+? "journal"
+: "note",
+
+title: note.title || "",
+content: note.content || "",
+
+tags: normalizeTags(note.tags || []),
+
+favorite: Boolean(note.favorite),
+pinned: Boolean(note.pinned),
+deleted: Boolean(note.deleted),
+
+mood: note.mood || "",
+
+createdAt:
+note.createdAt ||
+new Date().toISOString(),
+
+updatedAt:
+note.updatedAt ||
+new Date().toISOString()
+};
+});
+}
+
+/* =========================================================
+INITIALIZATION
+========================================================= */
+
+async function initializeApplication() {
+attachEventListeners();
+applyPreAuthenticationTheme();
+
+try {
+const record = await readStoredVault();
+
+if (record) {
+showAuthenticationPanel("unlock");
+
+setTimeout(() => {
+elements.unlockPassword.focus();
+}, 100);
+} else {
+showAuthenticationPanel("setup");
+
+setTimeout(() => {
+elements.setupName.focus();
+}, 100);
+}
+} catch (error) {
+showAuthenticationPanel("setup");
+
+showAuthenticationMessage(
+"Could not access browser storage. Check browser storage permissions or private browsing restrictions.",
+"error"
+);
+}
+}
+
+function applyPreAuthenticationTheme() {
+const prefersDark = window.matchMedia(
+"(prefers-color-scheme: dark)"
+).matches;
+
+document.body.classList.toggle(
+"dark",
+prefersDark
+);
+}
+
+function showAuthenticationPanel(panelName) {
+elements.setupPanel.classList.toggle(
+"hidden",
+panelName !== "setup"
+);
+
+elements.unlockPanel.classList.toggle(
+"hidden",
+panelName !== "unlock"
+);
+
+elements.importPasswordPanel.classList.toggle(
+"hidden",
+panelName !== "import"
+);
+
+clearAuthenticationMessage();
+}
+
+function showAuthenticationMessage(
+message,
+type = "error"
+) {
+elements.authMessage.textContent = message;
+
+elements.authMessage.className =
+"auth-message show " + type;
+}
+
+function clearAuthenticationMessage() {
+elements.authMessage.textContent = "";
+elements.authMessage.className = "auth-message";
+}
+
+function setAuthenticationBusy(
+isBusy,
+message = ""
+) {
+$$("button", elements.authScreen).forEach(
+(button) => {
+button.disabled = isBusy;
+}
+);
+
+if (isBusy && message) {
+showAuthenticationMessage(
+message,
+"success"
+);
+}
+}
+
+/* =========================================================
+CREATE, UNLOCK AND LOCK VAULT
+========================================================= */
+
+async function createNewVault() {
+const name =
+elements.setupName.value.trim() ||
+"Mayur";
+
+const password =
+elements.setupPassword.value;
+
+const confirmation =
+elements.setupPasswordConfirm.value;
+
+if (password.length < 8) {
+showAuthenticationMessage(
+"Use a password containing at least 8 characters.",
+"error"
+);
+
+return;
+}
+
+if (password !== confirmation) {
+showAuthenticationMessage(
+"The passwords do not match.",
+"error"
+);
+
+return;
+}
+
+setAuthenticationBusy(
+true,
+"Creating and encrypting your vault..."
+);
+
+try {
+state.vault = createEmptyVault(name);
+
+if (state.createDemoContent) {
+state.vault.notes = createSampleNotes();
+}
+
+state.password = password;
+
+await saveVaultImmediately();
+
+openApplication();
+
+showToast(
+"Vault created",
+"Your encrypted workspace is ready.",
+"success"
+);
+} catch (error) {
+state.vault = null;
+state.password = "";
+
+showAuthenticationMessage(
+error.message ||
+"Unable to create the vault.",
+"error"
+);
+} finally {
+setAuthenticationBusy(false);
+state.createDemoContent = false;
+}
+}
+
+async function unlockLocalVault() {
+const password =
+elements.unlockPassword.value;
+
+if (!password) {
+showAuthenticationMessage(
+"Enter your vault password.",
+"error"
+);
+
+return;
+}
+
+setAuthenticationBusy(
+true,
+"Decrypting your vault..."
+);
+
+try {
+const record = await readStoredVault();
+
+if (!record) {
+showAuthenticationPanel("setup");
+return;
+}
+
+state.vault = await decryptVault(
+record,
+password
+);
+
+state.password = password;
+
+openApplication();
+} catch (error) {
+state.vault = null;
+state.password = "";
+
+showAuthenticationMessage(
+"Incorrect password or damaged vault data.",
+"error"
+);
+} finally {
+setAuthenticationBusy(false);
+}
+}
+
+async function unlockImportedVault() {
+const password =
+elements.importPassword.value;
+
+if (
+!password ||
+!state.pendingImportedRecord
+) {
+showAuthenticationMessage(
+"Enter the password for the imported file.",
+"error"
+);
+
+return;
+}
+
+setAuthenticationBusy(
+true,
+"Decrypting the imported vault..."
+);
+
+try {
+const importedVault = await decryptVault(
+state.pendingImportedRecord,
+password
+);
+
+state.vault = importedVault;
+state.password = password;
+
+await writeStoredVault(
+state.pendingImportedRecord
+);
+
+state.pendingImportedRecord = null;
+elements.importPassword.value = "";
+
+openApplication();
+
+showToast(
+"Vault imported",
+"The encrypted backup is now stored on this device.",
+"success"
+);
+} catch (error) {
+state.vault = null;
+state.password = "";
+
+showAuthenticationMessage(
+"Incorrect password, unsupported file, or damaged vault.",
+"error"
+);
+} finally {
+setAuthenticationBusy(false);
+}
+}
+
+function openApplication() {
+normalizeLoadedVault();
+applyVaultAppearance();
+updateProfileInterface();
+
+elements.authScreen.classList.add("hidden");
+elements.application.classList.remove("locked");
+
+state.currentView = "all";
+state.selectedTag = null;
+state.searchQuery = "";
+
+elements.searchInput.value = "";
+
+const firstActiveNote =
+state.vault.notes.find(
+(note) => !note.deleted
+);
+
+state.selectedNoteId =
+firstActiveNote?.id || null;
+
+state.lastActivity = Date.now();
+
+elements.unlockPassword.value = "";
+elements.setupPassword.value = "";
+elements.setupPasswordConfirm.value = "";
+
+renderEverything();
+}
+
+async function lockVault(showStatus = true) {
+if (!state.vault) {
+return;
+}
+
+flushEditorIntoState();
+
+try {
+await saveVaultImmediately();
+} catch (error) {
+console.error(error);
+}
+
+state.vault = null;
+state.password = "";
+state.selectedNoteId = null;
+
+elements.richEditor.innerHTML = "";
+elements.noteTitleInput.value = "";
+
+closeDrawer();
+closeModal();
+hideContextMenu();
+closeMobileSidebar();
+
+elements.application.classList.add("locked");
+elements.authScreen.classList.remove("hidden");
+
+showAuthenticationPanel("unlock");
+
+if (showStatus) {
+showAuthenticationMessage(
+"Vault locked successfully.",
+"success"
+);
+}
+
+setTimeout(() => {
+elements.unlockPassword.focus();
+}, 80);
+}
+
+/* =========================================================
+SAVING
+========================================================= */
+
+function markVaultDirty() {
+if (!state.vault) {
+return;
+}
+
+elements.saveStatus.className =
+"save-status saving";
+
+elements.saveStatusText.textContent =
+"Editing";
+
+scheduleVaultSave();
+}
+
+function scheduleVaultSave(
+saveImmediately = false
+) {
+window.clearTimeout(state.saveTimer);
+
+if (saveImmediately) {
+saveVaultImmediately();
+return;
+}
+
+state.saveTimer = window.setTimeout(
+saveVaultImmediately,
+650
+);
+}
+
+async function saveVaultImmediately() {
+if (
+!state.vault ||
+!state.password
+) {
+return;
+}
+
+window.clearTimeout(state.saveTimer);
+
+flushEditorIntoState();
+
+elements.saveStatus.className =
+"save-status saving";
+
+elements.saveStatusText.textContent =
+"Encrypting";
+
+try {
+state.vault.updatedAt =
+new Date().toISOString();
+
+const encryptedRecord =
+await encryptVault(
+state.vault,
+state.password
+);
+
+await writeStoredVault(
+encryptedRecord
+);
+
+elements.saveStatus.className =
+"save-status";
+
+elements.saveStatusText.textContent =
+"Saved";
+} catch (error) {
+elements.saveStatus.className =
+"save-status error";
+
+elements.saveStatusText.textContent =
+"Save failed";
+
+showToast(
+"Save failed",
+error.message ||
+"The encrypted vault could not be saved.",
+"error"
+);
+
+throw error;
+}
+}
+
+/* =========================================================
+NOTE CREATION
+========================================================= */
+
+function createAndSelectNote(type = "note") {
+if (!state.vault) {
+return;
+}
+
+flushEditorIntoState();
+
+const note = createNote(type);
+
+state.vault.notes.unshift(note);
+state.selectedNoteId = note.id;
+
+state.currentView =
+type === "journal"
+? "journal"
+: "all";
+
+state.selectedTag = null;
+state.searchQuery = "";
+
+elements.searchInput.value = "";
+
+renderEverything();
+
+if (window.innerWidth <= 700) {
+elements.application.classList.add(
+"editor-mobile-open"
+);
+}
+
+window.setTimeout(() => {
+if (type === "journal") {
+elements.richEditor.focus();
+placeCaretAtEnd(elements.richEditor);
+} else {
+elements.noteTitleInput.focus();
+}
+}, 40);
+
+markVaultDirty();
+}
+
+/* =========================================================
+RENDERING
+========================================================= */
+
+function renderEverything() {
+renderNavigationCounts();
+renderTagNavigation();
+updateActiveNavigation();
+
+renderNotesList();
+renderEditor();
+
+updateProfileInterface();
+}
+
+function renderNavigationCounts() {
+if (!state.vault) {
+return;
+}
+
+const notes = state.vault.notes;
+
+elements.allCount.textContent =
+notes.filter(
+(note) => !note.deleted
+).length;
+
+elements.journalCount.textContent =
+notes.filter(
+(note) =>
+note.type === "journal" &&
+!note.deleted
+).length;
+
+elements.favoriteCount.textContent =
+notes.filter(
+(note) =>
+note.favorite &&
+!note.deleted
+).length;
+
+elements.pinnedCount.textContent =
+notes.filter(
+(note) =>
+note.pinned &&
+!note.deleted
+).length;
+
+elements.trashCount.textContent =
+notes.filter(
+(note) => note.deleted
+).length;
+}
+
+function getFilteredNotes() {
+if (!state.vault) {
+return [];
+}
+
+let notes = [...state.vault.notes];
+
+switch (state.currentView) {
+case "journal":
+notes = notes.filter(
+(note) =>
+note.type === "journal" &&
+!note.deleted
+);
+break;
+
+case "favorites":
+notes = notes.filter(
+(note) =>
+note.favorite &&
+!note.deleted
+);
+break;
+
+case "pinned":
+notes = notes.filter(
+(note) =>
+note.pinned &&
+!note.deleted
+);
+break;
+
+case "trash":
+notes = notes.filter(
+(note) => note.deleted
+);
+break;
+
+case "tag":
+notes = notes.filter(
+(note) =>
+!note.deleted &&
+note.tags.includes(
+state.selectedTag
+)
+);
+break;
+
+default:
+notes = notes.filter(
+(note) => !note.deleted
+);
+}
+
+const query =
+state.searchQuery
+.trim()
+.toLowerCase();
+
+if (query) {
+notes = notes.filter((note) => {
+const searchableText = [
+note.title,
+stripHtml(note.content),
+note.tags.join(" ")
+]
+.join(" ")
+.toLowerCase();
+
+return searchableText.includes(query);
+});
+}
+
+notes.sort((first, second) => {
+if (
+first.pinned !== second.pinned
+) {
+return (
+Number(second.pinned) -
+Number(first.pinned)
+);
+}
+
+switch (state.sortMode) {
+case "created-desc":
+return (
+new Date(second.createdAt) -
+new Date(first.createdAt)
+);
+
+case "title-asc":
+return (
+first.title || "Untitled"
+).localeCompare(
+second.title || "Untitled"
+);
+
+case "title-desc":
+return (
+second.title || "Untitled"
+).localeCompare(
+first.title || "Untitled"
+);
+
+default:
+return (
+new Date(second.updatedAt) -
+new Date(first.updatedAt)
+);
+}
+});
+
+return notes;
+}
+
+function getCurrentViewTitle() {
+if (state.searchQuery) {
+return "Search results";
+}
+
+const titles = {
+all: "All notes",
+journal: "Journal",
+favorites: "Favorites",
+pinned: "Pinned",
+trash: "Trash",
+tag:
+state.selectedTag
+? "#" + state.selectedTag
+: "Tagged notes"
+};
+
+return titles[state.currentView] || "All notes";
+}
+
+function renderNotesList() {
+const notes = getFilteredNotes();
+
+elements.visibleNoteCount.textContent =
+notes.length +
+" " +
+(notes.length === 1
+? "note"
+: "notes");
+
+elements.viewTitle.textContent =
+getCurrentViewTitle();
+
+if (notes.length === 0) {
+elements.notesList.innerHTML = `
+<div class="empty-list">
+<div class="empty-list-icon">⌕</div>
+<strong>No notes found</strong>
+<p>
+Try another search, choose a different section,
+or create a new note.
+</p>
+</div>
+`;
+
+return;
+}
+
+elements.notesList.innerHTML = notes
+.map((note) => {
+const preview =
+stripHtml(note.content) ||
+"No content yet";
+
+const visibleTags =
+note.tags.slice(0, 2);
+
+const title =
+note.title ||
+"Untitled note";
+
+return `
+<article
+class="note-card ${
+note.id === state.selectedNoteId
+? "active"
+: ""
+}"
+data-note-id="${escapeHtml(note.id)}"
+tabindex="0"
+>
+<div class="note-card-top">
+<h3 class="note-card-title">
+${escapeHtml(title)}
+</h3>
+
+${
+note.favorite
+? `<span title="Favorite">★</span>`
+: ""
+}
+
+${
+note.pinned
+? `<span title="Pinned">⌖</span>`
+: ""
+}
+</div>
+
+<p class="note-card-preview">
+${escapeHtml(preview)}
+</p>
+
+<div class="note-card-footer">
+<span class="note-type-badge">
+${
+note.type === "journal"
+? "Journal"
+: "Note"
+}
+</span>
+
+<span>
+${formatRelativeDate(note.updatedAt)}
+</span>
+
+${visibleTags
+.map((tag) => {
+return `
+<span class="mini-tag">
+#${escapeHtml(tag)}
+</span>
+`;
+})
+.join("")}
+</div>
+</article>
+`;
+})
+.join("");
+
+$$(".note-card", elements.notesList).forEach(
+(card) => {
+card.addEventListener(
+"click",
+() => {
+selectNote(card.dataset.noteId);
+}
+);
+
+card.addEventListener(
+"keydown",
+(event) => {
+if (
+event.key === "Enter" ||
+event.key === " "
+) {
+event.preventDefault();
+
+selectNote(
+card.dataset.noteId
+);
+}
+}
+);
+
+card.addEventListener(
+"contextmenu",
+(event) => {
+event.preventDefault();
+
+state.contextNoteId =
+card.dataset.noteId;
+
+showContextMenu(
+event.clientX,
+event.clientY
+);
+}
+);
+}
+);
+}
+
+function selectNote(noteId) {
+flushEditorIntoState();
+
+state.selectedNoteId = noteId;
+
+renderNotesList();
+renderEditor();
+
+if (window.innerWidth <= 700) {
+elements.application.classList.add(
+"editor-mobile-open"
+);
+}
+}
+
+function renderEditor() {
+const note = getSelectedNote();
+
+if (!note) {
+elements.editorEmpty.classList.remove(
+"hidden"
+);
+
+elements.editorShell.classList.add(
+"hidden"
+);
+
+return;
+}
+
+elements.editorEmpty.classList.add(
+"hidden"
+);
+
+elements.editorShell.classList.remove(
+"hidden"
+);
+
+elements.noteTitleInput.value =
+note.title || "";
+
+elements.richEditor.innerHTML =
+note.content || "";
+
+elements.tagsInput.value =
+note.tags.join(", ");
+
+elements.favoriteButton.classList.toggle(
+"active",
+note.favorite
+);
+
+elements.pinButton.classList.toggle(
+"active",
+note.pinned
+);
+
+elements.favoriteButton.querySelector(
+".icon"
+).textContent = note.favorite
+? "★"
+: "☆";
+
+elements.noteTypeLabel.textContent =
+note.type === "journal"
+? "Journal"
+: "Note";
+
+elements.journalMoodSection.classList.toggle(
+"hidden",
+note.type !== "journal"
+);
+
+$$(".mood-button").forEach((button) => {
+button.classList.toggle(
+"active",
+button.dataset.mood === note.mood
+);
+});
+
+elements.noteDateLabel.textContent =
+"Created " +
+new Intl.DateTimeFormat(
+"en-US",
+{
+month: "short",
+day: "numeric",
+year: "numeric"
+}
+).format(
+new Date(note.createdAt)
+);
+
+elements.richEditor.contentEditable =
+String(!note.deleted);
+
+elements.noteTitleInput.disabled =
+note.deleted;
+
+elements.tagsInput.disabled =
+note.deleted;
+
+updateEditorStatistics();
+updateContextMenuForNote(note);
+}
+
+function flushEditorIntoState() {
+const note = getSelectedNote();
+
+if (
+!note ||
+note.deleted
+) {
+return;
+}
+
+const title =
+elements.noteTitleInput.value;
+
+const content =
+elements.richEditor.innerHTML;
+
+const tags =
+normalizeTags(
+elements.tagsInput.value
+);
+
+const changed =
+note.title !== title ||
+note.content !== content ||
+JSON.stringify(note.tags) !==
+JSON.stringify(tags);
+
+if (!changed) {
+return;
+}
+
+note.title = title;
+note.content = content;
+note.tags = tags;
+note.updatedAt = new Date().toISOString();
+}
+
+function renderTagNavigation() {
+if (!state.vault) {
+return;
+}
+
+const tagCounts = new Map();
+
+state.vault.notes
+.filter((note) => !note.deleted)
+.forEach((note) => {
+note.tags.forEach((tag) => {
+tagCounts.set(
+tag,
+(tagCounts.get(tag) || 0) + 1
+);
+});
+});
+
+const colors = [
+"#6c5ce7",
+"#e04f9f",
+"#e8643f",
+"#dfa421",
+"#18a780",
+"#238bd1"
+];
+
+const tags = [...tagCounts.entries()]
+.sort((first, second) => {
+return first[0].localeCompare(second[0]);
+});
+
+if (tags.length === 0) {
+elements.tagsNavigation.innerHTML = `
+<div
+style="
+padding: 7px 10px;
+color: var(--text-muted);
+font-size: 0.74rem;
+line-height: 1.5;
+"
+>
+Add tags to organize your notes.
+</div>
+`;
+
+return;
+}
+
+elements.tagsNavigation.innerHTML =
+tags
+.map(([tag, count], index) => {
+return `
+<button
+class="navigation-item ${
+state.currentView === "tag" &&
+state.selectedTag === tag
+? "active"
+: ""
+}"
+data-tag="${escapeHtml(tag)}"
+>
+<span
+class="tag-dot"
+style="
+background:
+${colors[index % colors.length]}
+"
+></span>
+
+#${escapeHtml(tag)}
+
+<span class="navigation-count">
+${count}
+</span>
+</button>
+`;
+})
+.join("");
+
+$$(
+"[data-tag]",
+elements.tagsNavigation
+).forEach((button) => {
+button.addEventListener("click", () => {
+flushEditorIntoState();
+
+state.currentView = "tag";
+state.selectedTag =
+button.dataset.tag;
+
+updateActiveNavigation();
+renderNotesList();
+closeMobileSidebar();
+});
+});
+}
+
+function updateActiveNavigation() {
+$$(
+".navigation-item[data-view]"
+).forEach((button) => {
+button.classList.toggle(
+"active",
+button.dataset.view ===
+state.currentView
+);
+});
+}
+
+function updateEditorStatistics() {
+const text =
+stripHtml(
+elements.richEditor.innerHTML
+);
+
+const words = text
+? text.split(/\s+/).filter(Boolean).length
+: 0;
+
+const readingMinutes = words
+? Math.max(
+1,
+Math.ceil(words / 220)
+)
+: 0;
+
+elements.wordCount.textContent =
+words +
+" " +
+(words === 1 ? "word" : "words");
+
+elements.readingTime.textContent =
+readingMinutes + " min read";
+}
+
+/* =========================================================
+NOTE ACTIONS
+========================================================= */
+
+function toggleFavorite() {
+const note = getSelectedNote();
+
+if (
+!note ||
+note.deleted
+) {
+return;
+}
+
+note.favorite = !note.favorite;
+note.updatedAt = new Date().toISOString();
+
+renderNavigationCounts();
+renderNotesList();
+renderEditor();
+
+markVaultDirty();
+
+showToast(
+note.favorite
+? "Added to favorites"
+: "Removed from favorites",
+note.title || "Untitled note",
+"success"
+);
+}
+
+function togglePinned() {
+const note = getSelectedNote();
+
+if (
+!note ||
+note.deleted
+) {
+return;
+}
+
+note.pinned = !note.pinned;
+note.updatedAt = new Date().toISOString();
+
+renderNavigationCounts();
+renderNotesList();
+renderEditor();
+
+markVaultDirty();
+
+showToast(
+note.pinned
+? "Note pinned"
+: "Note unpinned",
+note.title || "Untitled note",
+"success"
+);
+}
+
+function updateJournalMood(mood) {
+const note = getSelectedNote();
+
+if (
+!note ||
+note.deleted ||
+note.type !== "journal"
+) {
+return;
+}
+
+note.mood = mood;
+note.updatedAt = new Date().toISOString();
+
+$$(".mood-button").forEach((button) => {
+button.classList.toggle(
+"active",
+button.dataset.mood === mood
+);
+});
+
+markVaultDirty();
+}
+
+function duplicateNote(noteId) {
+const original =
+state.vault.notes.find(
+(note) => note.id === noteId
+);
+
+if (!original) {
+return;
+}
+
+const timestamp =
+new Date().toISOString();
+
+const duplicate = {
+...JSON.parse(
+JSON.stringify(original)
+),
+
+id: generateId(original.type),
+
+title:
+(original.title || "Untitled note") +
+" Copy",
+
+pinned: false,
+deleted: false,
+
+createdAt: timestamp,
+updatedAt: timestamp
+};
+
+state.vault.notes.unshift(duplicate);
+
+state.selectedNoteId = duplicate.id;
+state.currentView = "all";
+state.selectedTag = null;
+
+renderEverything();
+markVaultDirty();
+
+showToast(
+"Note duplicated",
+duplicate.title,
+"success"
+);
+}
+
+function toggleNoteType(noteId) {
+const note =
+state.vault.notes.find(
+(item) => item.id === noteId
+);
+
+if (
+!note ||
+note.deleted
+) {
+return;
+}
+
+note.type =
+note.type === "journal"
+? "note"
+: "journal";
+
+note.mood =
+note.type === "journal"
+? "neutral"
+: "";
+
+if (
+note.type === "journal" &&
+!note.tags.includes("journal")
+) {
+note.tags.push("journal");
+}
+
+note.updatedAt = new Date().toISOString();
+
+renderEverything();
+markVaultDirty();
+
+showToast(
+"Note type changed",
+"Converted to " + note.type + ".",
+"success"
+);
+}
+
+function moveNoteToTrash(noteId) {
+const note =
+state.vault.notes.find(
+(item) => item.id === noteId
+);
+
+if (!note) {
+return;
+}
+
+if (note.deleted) {
+showConfirmationModal(
+"Delete permanently?",
+"This note will be permanently removed from the encrypted vault.",
+"Delete permanently",
+() => {
+state.vault.notes =
+state.vault.notes.filter(
+(item) => item.id !== note.id
+);
+
+if (
+state.selectedNoteId === note.id
+) {
+state.selectedNoteId =
+state.vault.notes.find(
+(item) => !item.deleted
+)?.id || null;
+}
+
+renderEverything();
+markVaultDirty();
+
+showToast(
+"Note deleted",
+"The note was permanently removed.",
+"success"
+);
+},
+true
+);
+
+return;
+}
+
+note.deleted = true;
+note.pinned = false;
+note.favorite = false;
+note.updatedAt = new Date().toISOString();
+
+if (
+state.selectedNoteId === note.id
+) {
+state.selectedNoteId =
+state.vault.notes.find(
+(item) => !item.deleted
+)?.id || null;
+}
+
+renderEverything();
+markVaultDirty();
+
+showToast(
+"Moved to trash",
+note.title || "Untitled note",
+"success"
+);
+}
+
+function restoreNote(noteId) {
+const note =
+state.vault.notes.find(
+(item) => item.id === noteId
+);
+
+if (!note) {
+return;
+}
+
+note.deleted = false;
+note.updatedAt = new Date().toISOString();
+
+state.currentView = "all";
+state.selectedNoteId = note.id;
+
+renderEverything();
+markVaultDirty();
+
+showToast(
+"Note restored",
+note.title || "Untitled note",
+"success"
+);
+}
+
+/* =========================================================
+RICH TEXT EDITOR
+========================================================= */
+
+function saveEditorSelection() {
+const selection =
+window.getSelection();
+
+if (
+!selection ||
+selection.rangeCount === 0
+) {
+return;
+}
+
+const range =
+selection.getRangeAt(0);
+
+if (
+elements.richEditor.contains(
+range.commonAncestorContainer
+)
+) {
+state.savedSelectionRange =
+range.cloneRange();
+}
+}
+
+function restoreEditorSelection() {
+if (!state.savedSelectionRange) {
+return;
+}
+
+const selection =
+window.getSelection();
+
+selection.removeAllRanges();
+selection.addRange(
+state.savedSelectionRange
+);
+}
+
+function executeFormattingCommand(
+command,
+value = null
+) {
+const note = getSelectedNote();
+
+if (
+!note ||
+note.deleted
+) {
+return;
+}
+
+elements.richEditor.focus();
+restoreEditorSelection();
+
+try {
+document.execCommand(
+command,
+false,
+value
+);
+} catch (error) {
+showToast(
+"Formatting unavailable",
+"The browser could not apply that format.",
+"error"
+);
+}
+
+handleEditorContentChange();
+saveEditorSelection();
+}
+
+function handleEditorContentChange() {
+updateEditorStatistics();
+markVaultDirty();
+
+window.clearTimeout(
+state.editorRenderTimer
+);
+
+state.editorRenderTimer =
+window.setTimeout(() => {
+flushEditorIntoState();
+
+renderNotesList();
+renderTagNavigation();
+renderNavigationCounts();
+}, 280);
+}
+
+function insertLink() {
+saveEditorSelection();
+
+const selection =
+window.getSelection();
+
+const selectedText =
+selection?.toString() || "";
+
+openPromptModal(
+"Insert link",
+"Add a web address to the selected text.",
+[
+{
+id: "linkAddressField",
+label: "Web address",
+type: "url",
+placeholder: "https://example.com"
+},
+{
+id: "linkTextField",
+label: "Link text",
+type: "text",
+value: selectedText,
+placeholder: "Descriptive link text"
+}
+],
+"Insert link",
+(values) => {
+let address =
+values.linkAddressField.trim();
+
+const linkText =
+values.linkTextField.trim() ||
+address;
+
+if (!address) {
+showToast(
+"Address required",
+"Enter a valid web address.",
+"error"
+);
+
+return false;
+}
+
+if (
+!/^(https?:|mailto:|tel:)/i.test(
+address
+)
+) {
+address = "https://" + address;
+}
+
+elements.richEditor.focus();
+restoreEditorSelection();
+
+document.execCommand(
+"insertHTML",
+false,
+'<a href="' +
+escapeHtml(address) +
+'" target="_blank" rel="noopener noreferrer">' +
+escapeHtml(linkText) +
+"</a>"
+);
+
+handleEditorContentChange();
+
+return true;
+}
+);
+}
+
+function placeCaretAtEnd(element) {
+element.focus();
+
+const range =
+document.createRange();
+
+range.selectNodeContents(element);
+range.collapse(false);
+
+const selection =
+window.getSelection();
+
+selection.removeAllRanges();
+selection.addRange(range);
+}
+
+/* =========================================================
+IMAGE INSERTION
+========================================================= */
+
+function fileToDataUrl(file) {
+return new Promise(
+(resolve, reject) => {
+const reader =
+new FileReader();
+
+reader.onload = () => {
+resolve(reader.result);
+};
+
+reader.onerror = () => {
+reject(
+reader.error ||
+new Error("Could not read the image.")
+);
+};
+
+reader.readAsDataURL(file);
+}
+);
+}
+
+function loadImage(source) {
+return new Promise(
+(resolve, reject) => {
+const image = new Image();
+
+image.onload = () => {
+resolve(image);
+};
+
+image.onerror = () => {
+reject(
+new Error("Could not decode the image.")
+);
+};
+
+image.src = source;
+}
+);
+}
+
+async function optimizeImage(file) {
+const source =
+await fileToDataUrl(file);
+
+if (
+file.type === "image/gif" ||
+file.type === "image/svg+xml"
+) {
+return source;
+}
+
+const image =
+await loadImage(source);
+
+const maximumDimension = 1800;
+
+let width = image.naturalWidth;
+let height = image.naturalHeight;
+
+if (
+width <= maximumDimension &&
+height <= maximumDimension
+) {
+return source;
+}
+
+const ratio = Math.min(
+maximumDimension / width,
+maximumDimension / height
+);
+
+width = Math.round(width * ratio);
+height = Math.round(height * ratio);
+
+const canvas =
+document.createElement("canvas");
+
+canvas.width = width;
+canvas.height = height;
+
+const context =
+canvas.getContext("2d");
+
+if (!context) {
+return source;
+}
+
+context.drawImage(
+image,
+0,
+0,
+width,
+height
+);
+
+return canvas.toDataURL(
+"image/jpeg",
+0.88
+);
+}
+
+async function handleImageFiles(files) {
+const note = getSelectedNote();
+
+if (
+!note ||
+note.deleted
+) {
+return;
+}
+
+const imageFiles = Array.from(files)
+.filter((file) => {
+return file.type.startsWith("image/");
+});
+
+if (imageFiles.length === 0) {
+showToast(
+"Unsupported file",
+"Select or drop an image file.",
+"error"
+);
+
+return;
+}
+
+for (const file of imageFiles) {
+try {
+const dataUrl =
+await optimizeImage(file);
+
+insertImageDataUrl(
+dataUrl,
+file.name
+);
+} catch (error) {
+showToast(
+"Image insertion failed",
+error.message ||
+"Could not insert " + file.name + ".",
+"error"
+);
+}
+}
+}
+
+function insertImageDataUrl(
+dataUrl,
+alternativeText = "Inserted image"
+) {
+const note = getSelectedNote();
+
+if (
+!note ||
+note.deleted
+) {
+return;
+}
+
+elements.richEditor.focus();
+restoreEditorSelection();
+
+const markup =
+"<figure>" +
+'<img src="' +
+dataUrl +
+'" alt="' +
+escapeHtml(alternativeText) +
+'">' +
+"<figcaption>" +
+escapeHtml(alternativeText) +
+"</figcaption>" +
+"</figure>" +
+"<p><br></p>";
+
+document.execCommand(
+"insertHTML",
+false,
+markup
+);
+
+handleEditorContentChange();
+
+showToast(
+"Image inserted",
+alternativeText,
+"success"
+);
+}
+
+/* =========================================================
+EXPORT AND IMPORT
+========================================================= */
+
+function downloadBlob(
+content,
+filename,
+mimeType
+) {
+const blob =
+content instanceof Blob
+? content
+: new Blob(
+[content],
+{
+type: mimeType
+}
+);
+
+const objectUrl =
+URL.createObjectURL(blob);
+
+const anchor =
+document.createElement("a");
+
+anchor.href = objectUrl;
+anchor.download = filename;
+
+document.body.appendChild(anchor);
+anchor.click();
+anchor.remove();
+
+window.setTimeout(() => {
+URL.revokeObjectURL(objectUrl);
+}, 1500);
+}
+
+async function exportEncryptedVault() {
+if (
+!state.vault ||
+!state.password
+) {
+return;
+}
+
+flushEditorIntoState();
+
+try {
+const encryptedRecord =
+await encryptVault(
+state.vault,
+state.password
+);
+
+const datePart =
+new Date()
+.toISOString()
+.slice(0, 10);
+
+downloadBlob(
+JSON.stringify(
+encryptedRecord,
+null,
+2
+),
+"Mayborg-Vault-" +
+datePart +
+".mayborg",
+"application/json"
+);
+
+showToast(
+"Encrypted backup exported",
+"Keep the file and its password in a safe location.",
+"success"
+);
+} catch (error) {
+showToast(
+"Export failed",
+error.message ||
+"Could not create the encrypted backup.",
+"error"
+);
+}
+}
+
+function requestVaultFileImport() {
+elements.vaultFileInput.value = "";
+elements.vaultFileInput.click();
+}
+
+async function processSelectedVaultFile(file) {
+try {
+const text = await file.text();
+const record = JSON.parse(text);
+
+validateEncryptedRecord(record);
+
+state.pendingImportedRecord = record;
+
+elements.importFileDescription.textContent =
+'Enter the password used to encrypt "' +
+file.name +
+'".';
+
+if (state.vault) {
+openImportReplacementModal(
+file.name
+);
+} else {
+showAuthenticationPanel("import");
+
+setTimeout(() => {
+elements.importPassword.focus();
+}, 80);
+}
+} catch (error) {
+if (state.vault) {
+showToast(
+"Invalid vault file",
+error.message ||
+"The selected file is unsupported.",
+"error"
+);
+} else {
+showAuthenticationMessage(
+error.message ||
+"The selected file is unsupported.",
+"error"
+);
+}
+}
+}
+
+function openImportReplacementModal(
+filename
+) {
+openPromptModal(
+"Import encrypted vault",
+'Importing "' +
+filename +
+'" will replace the current local vault after the password is verified.',
+[
+{
+id: "replacementPassword",
+label: "Imported vault password",
+type: "password",
+placeholder:
+"Enter imported vault password"
+}
+],
+"Decrypt and replace",
+async (values) => {
+const password =
+values.replacementPassword;
+
+if (!password) {
+showToast(
+"Password required",
+"Enter the imported vault password.",
+"error"
+);
+
+return false;
+}
+
+try {
+const importedVault =
+await decryptVault(
+state.pendingImportedRecord,
+password
+);
+
+state.vault = importedVault;
+state.password = password;
+
+await writeStoredVault(
+state.pendingImportedRecord
+);
+
+normalizeLoadedVault();
+applyVaultAppearance();
+
+const firstActiveNote =
+state.vault.notes.find(
+(note) => !note.deleted
+);
+
+state.selectedNoteId =
+firstActiveNote?.id || null;
+
+state.currentView = "all";
+state.selectedTag = null;
+
+state.pendingImportedRecord = null;
+
+renderEverything();
+
+showToast(
+"Vault replaced",
+"The imported encrypted vault is now active.",
+"success"
+);
+
+return true;
+} catch (error) {
+showToast(
+"Import failed",
+"Incorrect password or damaged vault.",
+"error"
+);
+
+return false;
+}
+}
+);
+}
+
+function createCsvValue(value) {
+const text = String(value ?? "");
+
+if (/[",\r\n]/.test(text)) {
+return (
+'"' +
+text.replaceAll('"', '""') +
+'"'
+);
+}
+
+return text;
+}
+
+function exportReadableCsv() {
+if (!state.vault) {
+return;
+}
+
+showConfirmationModal(
+"Export unencrypted CSV?",
+"The CSV will contain readable note titles and content. It will not be password protected.",
+"Export CSV",
+() => {
+const rows = [
+[
+"id",
+"type",
+"title",
+"content",
+"tags",
+"favorite",
+"pinned",
+"deleted",
+"mood",
+"createdAt",
+"updatedAt"
+],
+
+...state.vault.notes.map((note) => {
+return [
+note.id,
+note.type,
+note.title,
+stripHtml(note.content),
+note.tags.join("|"),
+note.favorite,
+note.pinned,
+note.deleted,
+note.mood,
+note.createdAt,
+note.updatedAt
+];
+})
+];
+
+const csv = rows
+.map((row) => {
+return row
+.map(createCsvValue)
+.join(",");
+})
+.join("\r\n");
+
+const datePart =
+new Date()
+.toISOString()
+.slice(0, 10);
+
+downloadBlob(
+"\ufeff" + csv,
+"Mayborg-Notes-" +
+datePart +
+".csv",
+"text/csv;charset=utf-8"
+);
+
+showToast(
+"CSV exported",
+"The readable file has been downloaded.",
+"success"
+);
+}
+);
+}
+
+function exportNoteAsHtml(noteId) {
+const note =
+state.vault.notes.find(
+(item) => item.id === noteId
+);
+
+if (!note) {
+return;
+}
+
+const safeTitle =
+escapeHtml(
+note.title ||
+"Untitled note"
+);
+
+const htmlDocument =
+"<!DOCTYPE html>" +
+'<html lang="en">' +
+"<head>" +
+'<meta charset="UTF-8">' +
+'<meta name="viewport" content="width=device-width, initial-scale=1">' +
+"<title>" +
+safeTitle +
+"</title>" +
+"<style>" +
+"body{" +
+"max-width:820px;" +
+"margin:50px auto;" +
+"padding:0 22px;" +
+"color:#202331;" +
+"background:#fff;" +
+"font-family:Inter,Segoe UI,Arial,sans-serif;" +
+"line-height:1.75;" +
+"}" +
+"img{" +
+"max-width:100%;" +
+"height:auto;" +
+"border-radius:15px;" +
+"}" +
+"blockquote{" +
+"border-left:4px solid #6c5ce7;" +
+"margin-left:0;" +
+"padding:10px 16px;" +
+"background:#f2efff;" +
+"}" +
+"</style>" +
+"</head>" +
+"<body>" +
+"<h1>" +
+safeTitle +
+"</h1>" +
+"<p><small>" +
+escapeHtml(
+new Date(
+note.updatedAt
+).toLocaleString()
+) +
+"</small></p>" +
+note.content +
+"</body>" +
+"</html>";
+
+const safeFilename =
+(note.title || "Mayborg-Note")
+.replace(
+/[<>:"/\\|?*\x00-\x1F]/g,
+"-"
+)
+.slice(0, 80);
+
+downloadBlob(
+htmlDocument,
+safeFilename + ".html",
+"text/html;charset=utf-8"
+);
+
+showToast(
+"Note exported",
+safeFilename + ".html",
+"success"
+);
+}
+
+/* =========================================================
+PROFILE
+========================================================= */
+
+function updateProfileInterface() {
+if (!state.vault) {
+return;
+}
+
+const profile =
+state.vault.profile;
+
+const name =
+profile.name || "Mayur";
+
+elements.sidebarProfileName.textContent =
+name;
+
+elements.drawerProfileName.textContent =
+name;
+
+[
+elements.sidebarAvatar,
+elements.drawerAvatar
+].forEach((avatarElement) => {
+if (profile.avatar) {
+avatarElement.innerHTML =
+'<img src="' +
+profile.avatar +
+'" alt="' +
+escapeHtml(name) +
+'">';
+} else {
+avatarElement.textContent =
+getInitials(name);
+}
+});
+}
+
+function openProfileModal() {
+const profile =
+state.vault.profile;
+
+openModal(
+"Edit profile",
+"Personalize the name and picture shown inside your local vault.",
+`
+<div class="profile-image-row">
+<div
+id="modalProfilePreview"
+class="profile-image-preview"
+>
+${
+profile.avatar
+? `<img
+src="${profile.avatar}"
+alt="Profile picture"
+>`
+: escapeHtml(
+getInitials(profile.name)
+)
+}
+</div>
+
+<div
+style="
+display: grid;
+gap: 7px;
+flex: 1;
+"
+>
+<button
+id="chooseProfileImageButton"
+class="button soft compact"
+>
+<span class="icon small">🖼</span>
+Choose picture
+</button>
+
+<button
+id="removeProfileImageButton"
+class="button ghost compact"
+>
+Remove picture
+</button>
+</div>
+</div>
+
+<div class="field">
+<label for="profileNameField">
+Display name
+</label>
+
+<input
+id="profileNameField"
+type="text"
+maxlength="60"
+value="${escapeHtml(profile.name)}"
+>
+</div>
+`,
+[
+{
+label: "Cancel",
+style: "ghost",
+action: closeModal
+},
+
+{
+label: "Save profile",
+style: "primary",
+action: () => {
+const name =
+$("#profileNameField")
+.value
+.trim();
+
+if (!name) {
+showToast(
+"Name required",
+"Enter a display name.",
+"error"
+);
+
+return;
+}
+
+const previewImage = $(
+"#modalProfilePreview img"
+);
+
+state.vault.profile.name =
+name;
+
+state.vault.profile.avatar =
+previewImage
+? previewImage.src
+: "";
+
+updateProfileInterface();
+markVaultDirty();
+closeModal();
+
+showToast(
+"Profile updated",
+"Your local profile has been saved.",
+"success"
+);
+}
+}
+]
+);
+
+const chooseButton =
+$("#chooseProfileImageButton");
+
+const removeButton =
+$("#removeProfileImageButton");
+
+if (chooseButton) {
+chooseButton.addEventListener(
+"click",
+() => {
+elements.profileImageInput.value =
+"";
+
+elements.profileImageInput.click();
+}
+);
+}
+
+if (removeButton) {
+removeButton.addEventListener(
+"click",
+() => {
+const preview =
+$("#modalProfilePreview");
+
+const name =
+$("#profileNameField")
+.value
+.trim();
+
+preview.textContent =
+getInitials(name);
+}
+);
+}
+}
+
+/* =========================================================
+CHANGE PASSWORD
+========================================================= */
+
+function openChangePasswordModal() {
+openPromptModal(
+"Change vault password",
+"The complete vault will be re-encrypted using the new password.",
+[
+{
+id: "currentPasswordField",
+label: "Current password",
+type: "password",
+placeholder: "Current vault password"
+},
+{
+id: "newPasswordField",
+label: "New password",
+type: "password",
+placeholder: "Minimum 8 characters"
+},
+{
+id: "confirmNewPasswordField",
+label: "Confirm new password",
+type: "password",
+placeholder:
+"Enter the new password again"
+}
+],
+"Change password",
+async (values) => {
+if (
+values.currentPasswordField !==
+state.password
+) {
+showToast(
+"Current password is incorrect",
+"The vault password was not changed.",
+"error"
+);
+
+return false;
+}
+
+if (
+values.newPasswordField.length < 8
+) {
+showToast(
+"Password is too short",
+"Use at least 8 characters.",
+"error"
+);
+
+return false;
+}
+
+if (
+values.newPasswordField !==
+values.confirmNewPasswordField
+) {
+showToast(
+"Passwords do not match",
+"Re-enter the new password.",
+"error"
+);
+
+return false;
+}
+
+const oldPassword = state.password;
+
+try {
+state.password =
+values.newPasswordField;
+
+await saveVaultImmediately();
+
+showToast(
+"Password changed",
+"The local vault has been re-encrypted.",
+"success"
+);
+
+return true;
+} catch (error) {
+state.password = oldPassword;
+
+showToast(
+"Password change failed",
+error.message ||
+"The vault could not be re-encrypted.",
+"error"
+);
+
+return false;
+}
+}
+);
+}
+
+/* =========================================================
+APPEARANCE
+========================================================= */
+
+function applyVaultAppearance() {
+if (!state.vault) {
+return;
+}
+
+const settings =
+state.vault.settings;
+
+applyAccent(
+settings.accent || "#6c5ce7",
+settings.accentRgb || "108,92,231"
+);
+
+applyTheme(
+settings.theme || "system"
+);
+}
+
+function applyTheme(theme) {
+const systemDark =
+window.matchMedia(
+"(prefers-color-scheme: dark)"
+).matches;
+
+const shouldUseDarkTheme =
+theme === "dark" ||
+(
+theme === "system" &&
+systemDark
+);
+
+document.body.classList.toggle(
+"dark",
+shouldUseDarkTheme
+);
+
+if (elements.quickThemeIcon) {
+elements.quickThemeIcon.textContent =
+shouldUseDarkTheme
+? "☀"
+: "☾";
+}
+
+$$(".theme-choice").forEach(
+(button) => {
+button.classList.toggle(
+"active",
+button.dataset.theme === theme
+);
+}
+);
+
+const themeColorMeta =
+document.querySelector(
+'meta[name="theme-color"]'
+);
+
+if (themeColorMeta) {
+themeColorMeta.setAttribute(
+"content",
+shouldUseDarkTheme
+? "#151822"
+: (
+state.vault?.settings?.accent ||
+"#6c5ce7"
+)
+);
+}
+}
+
+function setTheme(theme) {
+if (!state.vault) {
+return;
+}
+
+state.vault.settings.theme = theme;
+
+applyTheme(theme);
+markVaultDirty();
+}
+
+function toggleQuickTheme() {
+if (!state.vault) {
+return;
+}
+
+const currentlyDark =
+document.body.classList.contains(
+"dark"
+);
+
+setTheme(
+currentlyDark
+? "light"
+: "dark"
+);
+}
+
+function applyAccent(color, rgb) {
+document.documentElement.style.setProperty(
+"--accent",
+color
+);
+
+document.documentElement.style.setProperty(
+"--accent-rgb",
+rgb
+);
+
+$$(".accent-choice").forEach(
+(button) => {
+button.classList.toggle(
+"active",
+button.dataset.accent.toLowerCase() ===
+color.toLowerCase()
+);
+}
+);
+}
+
+function setAccent(color, rgb) {
+if (!state.vault) {
+return;
+}
+
+state.vault.settings.accent =
+color;
+
+state.vault.settings.accentRgb =
+rgb;
+
+applyAccent(color, rgb);
+applyTheme(
+state.vault.settings.theme
+);
+
+markVaultDirty();
+}
+
+/* =========================================================
+DRAWER
+========================================================= */
+
+function openDrawer() {
+elements.drawer.classList.add("show");
+elements.drawerOverlay.classList.add(
+"show"
+);
+}
+
+function closeDrawer() {
+elements.drawer.classList.remove("show");
+elements.drawerOverlay.classList.remove(
+"show"
+);
+}
+
+/* =========================================================
+MODALS
+========================================================= */
+
+function openModal(
+title,
+description,
+bodyHtml,
+actions = []
+) {
+elements.modalTitle.textContent = title;
+
+elements.modalDescription.textContent =
+description || "";
+
+elements.modalBody.innerHTML =
+bodyHtml;
+
+elements.modalActions.innerHTML =
+"";
+
+actions.forEach((action) => {
+const button =
+document.createElement("button");
+
+button.className =
+"button " +
+(action.style || "ghost");
+
+button.textContent =
+action.label;
+
+button.addEventListener(
+"click",
+action.action
+);
+
+elements.modalActions.appendChild(
+button
+);
+});
+
+elements.modalOverlay.classList.add(
+"show"
+);
+}
+
+function closeModal() {
+elements.modalOverlay.classList.remove(
+"show"
+);
+
+elements.modalBody.innerHTML = "";
+elements.modalActions.innerHTML = "";
+}
+
+function openPromptModal(
+title,
+description,
+fields,
+submitLabel,
+onSubmit
+) {
+const bodyHtml = fields
+.map((field) => {
+return `
+<div class="field">
+<label for="${escapeHtml(field.id)}">
+${escapeHtml(field.label)}
+</label>
+
+<input
+id="${escapeHtml(field.id)}"
+type="${escapeHtml(
+field.type || "text"
+)}"
+value="${escapeHtml(
+field.value || ""
+)}"
+placeholder="${escapeHtml(
+field.placeholder || ""
+)}"
+autocomplete="off"
+>
+</div>
+`;
+})
+.join("");
+
+openModal(
+title,
+description,
+bodyHtml,
+[
+{
+label: "Cancel",
+style: "ghost",
+action: closeModal
+},
+
+{
+label: submitLabel,
+style: "primary",
+
+action: async () => {
+const values = {};
+
+fields.forEach((field) => {
+const input = document.getElementById(
+field.id
+);
+
+values[field.id] =
+input ? input.value : "";
+});
+
+const result =
+await onSubmit(values);
+
+if (result !== false) {
+closeModal();
+}
+}
+}
+]
+);
+
+window.setTimeout(() => {
+const firstInput =
+document.getElementById(
+fields[0]?.id
+);
+
+if (firstInput) {
+firstInput.focus();
+}
+}, 50);
+}
+
+function showConfirmationModal(
+title,
+description,
+confirmationLabel,
+onConfirm,
+dangerous = false
+) {
+openModal(
+title,
+description,
+`
+<div class="information-box">
+This action affects data inside the currently
+unlocked vault.
+</div>
+`,
+[
+{
+label: "Cancel",
+style: "ghost",
+action: closeModal
+},
+
+{
+label: confirmationLabel,
+style:
+dangerous
+? "danger"
+: "primary",
+
+action: () => {
+closeModal();
+onConfirm();
+}
+}
+]
+);
+}
+
+/* =========================================================
+CONTEXT MENU
+========================================================= */
+
+function updateContextMenuForNote(note) {
+const restoreButton = $(
+'[data-context-action="restore"]',
+elements.contextMenu
+);
+
+const deleteButton = $(
+'[data-context-action="delete"]',
+elements.contextMenu
+);
+
+const duplicateButton = $(
+'[data-context-action="duplicate"]',
+elements.contextMenu
+);
+
+const convertButton = $(
+'[data-context-action="toggle-type"]',
+elements.contextMenu
+);
+
+if (restoreButton) {
+restoreButton.classList.toggle(
+"hidden",
+!note.deleted
+);
+}
+
+if (duplicateButton) {
+duplicateButton.classList.toggle(
+"hidden",
+note.deleted
+);
+}
+
+if (convertButton) {
+convertButton.classList.toggle(
+"hidden",
+note.deleted
+);
+}
+
+if (deleteButton) {
+deleteButton.innerHTML =
+note.deleted
+? '<span class="icon small">⌫</span> Delete permanently'
+: '<span class="icon small">⌫</span> Move to trash';
+}
+}
+
+function showContextMenu(x, y) {
+const note =
+state.vault.notes.find(
+(item) =>
+item.id === state.contextNoteId
+);
+
+if (!note) {
+return;
+}
+
+updateContextMenuForNote(note);
+
+elements.contextMenu.classList.add(
+"show"
+);
+
+const rectangle =
+elements.contextMenu.getBoundingClientRect();
+
+const left = Math.min(
+x,
+window.innerWidth -
+rectangle.width -
+10
+);
+
+const top = Math.min(
+y,
+window.innerHeight -
+rectangle.height -
+10
+);
+
+elements.contextMenu.style.left =
+Math.max(8, left) + "px";
+
+elements.contextMenu.style.top =
+Math.max(8, top) + "px";
+}
+
+function hideContextMenu() {
+elements.contextMenu.classList.remove(
+"show"
+);
+}
+
+/* =========================================================
+TOASTS
+========================================================= */
+
+function showToast(
+title,
+message,
+type = "info"
+) {
+const toastElement =
+document.createElement("div");
+
+toastElement.className =
+"toast " + type;
+
+const symbol =
+type === "success"
+? "✓"
+: type === "error"
+? "×"
+: "ⓘ";
+
+toastElement.innerHTML = `
+<div class="toast-symbol">
+<span class="icon">${symbol}</span>
+</div>
+
+<div class="toast-copy">
+<strong>${escapeHtml(title)}</strong>
+<span>${escapeHtml(message)}</span>
+</div>
+`;
+
+elements.toastContainer.appendChild(
+toastElement
+);
+
+window.setTimeout(() => {
+toastElement.style.opacity = "0";
+toastElement.style.transform =
+"translateY(10px)";
+
+window.setTimeout(() => {
+toastElement.remove();
+}, 220);
+}, 3200);
+}
+
+/* =========================================================
+MOBILE SIDEBAR
+========================================================= */
+
+function openMobileSidebar() {
+elements.sidebar.classList.add(
+"mobile-show"
+);
+
+elements.mobileOverlay.classList.add(
+"show"
+);
+}
+
+function closeMobileSidebar() {
+elements.sidebar.classList.remove(
+"mobile-show"
+);
+
+elements.mobileOverlay.classList.remove(
+"show"
+);
+}
+
+/* =========================================================
+INFORMATION MODALS
+========================================================= */
+
+function openKeyboardShortcutsModal() {
+openModal(
+"Keyboard shortcuts",
+"Use these shortcuts while the vault is unlocked.",
+`
+<div class="information-box">
+<strong>Ctrl + N</strong><br>
+Create a blank note
+</div>
+
+<div class="information-box">
+<strong>Ctrl + Shift + J</strong><br>
+Create today’s journal
+</div>
+
+<div class="information-box">
+<strong>Ctrl + S</strong><br>
+Encrypt and save immediately
+</div>
+
+<div class="information-box">
+<strong>Ctrl + K</strong><br>
+Focus global search
+</div>
+
+<div class="information-box">
+<strong>Ctrl + Shift + L</strong><br>
+Lock the vault
+</div>
+
+<div class="information-box">
+<strong>Escape</strong><br>
+Close menus or return to the note list
+</div>
+`,
+[
+{
+label: "Close",
+style: "primary",
+action: closeModal
+}
+]
+);
+}
+
+function openAboutModal() {
+openModal(
+"About Mayborg Vault",
+"A standalone offline-first notes and journaling application.",
+`
+<div class="information-box">
+<strong>Encryption</strong><br>
+Vault content is encrypted using AES-GCM. The key
+is derived from your password using PBKDF2 with
+SHA-256 and a random salt.
+</div>
+
+<div class="information-box">
+<strong>Local storage</strong><br>
+The encrypted vault is stored in this browser’s
+IndexedDB. Encrypted .mayborg backup files can be
+exported and imported.
+</div>
+
+<div class="information-box">
+<strong>Privacy</strong><br>
+This standalone application contains no analytics,
+cloud synchronization, external fonts, remote
+scripts or network requests.
+</div>
+
+<div class="information-box">
+<strong>Password recovery</strong><br>
+There is no recovery key or backdoor. The current
+password is required to decrypt the vault or change
+its password.
+</div>
+
+<div
+style="
+text-align: center;
+color: var(--text-muted);
+font-size: 0.76rem;
+line-height: 1.7;
+"
+>
+Mayborg Vault ${APP_VERSION}<br>
+Made with ❤️ by MAYBORG
+</div>
+`,
+[
+{
+label: "Close",
+style: "primary",
+action: closeModal
+}
+]
+);
+}
+
+/* =========================================================
+AUTO LOCK
+========================================================= */
+
+function checkAutomaticLock() {
+if (!state.vault) {
+return;
+}
+
+const minutes =
+Number(
+state.vault.settings.autoLockMinutes
+) ||
+DEFAULT_AUTO_LOCK_MINUTES;
+
+const elapsed =
+Date.now() - state.lastActivity;
+
+if (
+elapsed >=
+minutes * 60 * 1000
+) {
+lockVault(false).then(() => {
+showAuthenticationMessage(
+"Vault locked after " +
+minutes +
+" minutes of inactivity.",
+"success"
+);
+});
+}
+}
+
+/* =========================================================
+KEYBOARD SHORTCUTS
+========================================================= */
+
+function handleKeyboardShortcuts(event) {
+if (!state.vault) {
+return;
+}
+
+const controlKey =
+event.ctrlKey ||
+event.metaKey;
+
+if (
+controlKey &&
+event.key.toLowerCase() === "s"
+) {
+event.preventDefault();
+
+saveVaultImmediately()
+.then(() => {
+showToast(
+"Vault saved",
+"Encrypted data is up to date.",
+"success"
+);
+})
+.catch(() => {});
+}
+
+if (
+controlKey &&
+!event.shiftKey &&
+event.key.toLowerCase() === "n"
+) {
+event.preventDefault();
+createAndSelectNote("note");
+}
+
+if (
+controlKey &&
+event.shiftKey &&
+event.key.toLowerCase() === "j"
+) {
+event.preventDefault();
+createAndSelectNote("journal");
+}
+
+if (
+controlKey &&
+event.key.toLowerCase() === "k"
+) {
+event.preventDefault();
+
+elements.searchInput.focus();
+elements.searchInput.select();
+}
+
+if (
+controlKey &&
+event.shiftKey &&
+event.key.toLowerCase() === "l"
+) {
+event.preventDefault();
+lockVault(true);
+}
+
+if (event.key === "Escape") {
+hideContextMenu();
+
+if (
+elements.modalOverlay.classList.contains(
+"show"
+)
+) {
+closeModal();
+return;
+}
+
+if (
+elements.drawer.classList.contains(
+"show"
+)
+) {
+closeDrawer();
+return;
+}
+
+if (
+window.innerWidth <= 700 &&
+elements.application.classList.contains(
+"editor-mobile-open"
+)
+) {
+elements.application.classList.remove(
+"editor-mobile-open"
+);
+}
+}
+}
+
+/* =========================================================
+EVENT LISTENERS
+========================================================= */
+
+function attachEventListeners() {
+/* Authentication */
+
+$("#createVaultButton").addEventListener(
+"click",
+createNewVault
+);
+
+$("#unlockButton").addEventListener(
+"click",
+unlockLocalVault
+);
+
+$("#openImportedVaultButton").addEventListener(
+"click",
+unlockImportedVault
+);
+
+$("#setupDemoButton").addEventListener(
+"click",
+() => {
+state.createDemoContent =
+!state.createDemoContent;
+
+$("#setupDemoButton").classList.toggle(
+"success",
+state.createDemoContent
+);
+
+showAuthenticationMessage(
+state.createDemoContent
+? "Sample notes will be added when the vault is created."
+: "Sample notes will not be added.",
+"success"
+);
+}
+);
+
+$("#setupImportButton").addEventListener(
+"click",
+requestVaultFileImport
+);
+
+$("#unlockImportButton").addEventListener(
+"click",
+requestVaultFileImport
+);
+
+$("#cancelImportButton").addEventListener(
+"click",
+async () => {
+state.pendingImportedRecord = null;
+elements.importPassword.value = "";
+
+const localVault =
+await readStoredVault();
+
+showAuthenticationPanel(
+localVault
+? "unlock"
+: "setup"
+);
+}
+);
+
+$("#resetVaultButton").addEventListener(
+"click",
+async (event) => {
+if (!event.shiftKey) {
+showAuthenticationMessage(
+"Hold Shift while clicking Reset local vault to permanently remove the local encrypted vault.",
+"error"
+);
+
+return;
+}
+
+try {
+await removeStoredVault();
+
+state.vault = null;
+state.password = "";
+
+showAuthenticationPanel("setup");
+
+showAuthenticationMessage(
+"The local encrypted vault was removed. Exported backup files were not affected.",
+"success"
+);
+} catch (error) {
+showAuthenticationMessage(
+"Could not remove the local vault.",
+"error"
+);
+}
+}
+);
+
+$$(".password-toggle").forEach(
+(button) => {
+button.addEventListener(
+"click",
+() => {
+const input =
+document.getElementById(
+button.dataset.passwordTarget
+);
+
+if (!input) {
+return;
+}
+
+input.type =
+input.type === "password"
+? "text"
+: "password";
+
+const icon =
+button.querySelector(".icon");
+
+if (icon) {
+icon.textContent =
+input.type === "password"
+? "◉"
+: "○";
+}
+}
+);
+}
+);
+
+[
+elements.setupPassword,
+elements.setupPasswordConfirm
+].forEach((input) => {
+input.addEventListener(
+"keydown",
+(event) => {
+if (event.key === "Enter") {
+createNewVault();
+}
+}
+);
+});
+
+elements.unlockPassword.addEventListener(
+"keydown",
+(event) => {
+if (event.key === "Enter") {
+unlockLocalVault();
+}
+}
+);
+
+elements.importPassword.addEventListener(
+"keydown",
+(event) => {
+if (event.key === "Enter") {
+unlockImportedVault();
+}
+}
+);
+
+/* Note creation */
+
+[
+"#newNoteButton",
+"#notesNewButton",
+"#emptyCreateButton",
+"#quickNoteButton"
+].forEach((selector) => {
+$(selector).addEventListener(
+"click",
+() => {
+createAndSelectNote("note");
+}
+);
+});
+
+$("#quickJournalButton").addEventListener(
+"click",
+() => {
+createAndSelectNote("journal");
+}
+);
+
+/* Navigation */
+
+$$(
+".navigation-item[data-view]"
+).forEach((button) => {
+button.addEventListener(
+"click",
+() => {
+flushEditorIntoState();
+
+state.currentView =
+button.dataset.view;
+
+state.selectedTag = null;
+
+updateActiveNavigation();
+renderNotesList();
+
+closeMobileSidebar();
+}
+);
+});
+
+/* Search and sort */
+
+elements.searchInput.addEventListener(
+"input",
+() => {
+state.searchQuery =
+elements.searchInput.value;
+
+renderNotesList();
+}
+);
+
+elements.sortSelect.addEventListener(
+"change",
+() => {
+state.sortMode =
+elements.sortSelect.value;
+
+renderNotesList();
+}
+);
+
+/* Editor input */
+
+elements.noteTitleInput.addEventListener(
+"input",
+handleEditorContentChange
+);
+
+elements.richEditor.addEventListener(
+"input",
+handleEditorContentChange
+);
+
+elements.tagsInput.addEventListener(
+"input",
+handleEditorContentChange
+);
+
+elements.richEditor.addEventListener(
+"keyup",
+saveEditorSelection
+);
+
+elements.richEditor.addEventListener(
+"mouseup",
+saveEditorSelection
+);
+
+elements.richEditor.addEventListener(
+"focus",
+saveEditorSelection
+);
+
+/* Note actions */
+
+elements.favoriteButton.addEventListener(
+"click",
+toggleFavorite
+);
+
+elements.pinButton.addEventListener(
+"click",
+togglePinned
+);
+
+$$(".mood-button").forEach(
+(button) => {
+button.addEventListener(
+"click",
+() => {
+updateJournalMood(
+button.dataset.mood
+);
+}
+);
+}
+);
+
+/* Formatting toolbar */
+
+$$(
+".toolbar-button[data-command]"
+).forEach((button) => {
+button.addEventListener(
+"mousedown",
+(event) => {
+event.preventDefault();
+
+executeFormattingCommand(
+button.dataset.command,
+button.dataset.value || null
+);
+}
+);
+});
+
+$("#formatBlockSelect").addEventListener(
+"change",
+(event) => {
+executeFormattingCommand(
+"formatBlock",
+event.target.value
+);
+}
+);
+
+$("#textColorButton").addEventListener(
+"mousedown",
+(event) => {
+event.preventDefault();
+saveEditorSelection();
+$("#textColorInput").click();
+}
+);
+
+$("#textColorInput").addEventListener(
+"input",
+(event) => {
+executeFormattingCommand(
+"foreColor",
+event.target.value
+);
+}
+);
+
+$("#highlightColorButton").addEventListener(
+"mousedown",
+(event) => {
+event.preventDefault();
+saveEditorSelection();
+$("#highlightColorInput").click();
+}
+);
+
+$("#highlightColorInput").addEventListener(
+"input",
+(event) => {
+executeFormattingCommand(
+"hiliteColor",
+event.target.value
+);
+}
+);
+
+$("#linkButton").addEventListener(
+"mousedown",
+(event) => {
+event.preventDefault();
+insertLink();
+}
+);
+
+$("#imageButton").addEventListener(
+"mousedown",
+(event) => {
+event.preventDefault();
+saveEditorSelection();
+
+elements.imageFileInput.value = "";
+elements.imageFileInput.click();
+}
+);
+
+elements.imageFileInput.addEventListener(
+"change",
+() => {
+handleImageFiles(
+elements.imageFileInput.files
+);
+}
+);
+
+/* Image drag and drop */
+
+elements.richEditor.addEventListener(
+"dragover",
+(event) => {
+event.preventDefault();
+
+elements.richEditor.classList.add(
+"dragging"
+);
+}
+);
+
+elements.richEditor.addEventListener(
+"dragleave",
+() => {
+elements.richEditor.classList.remove(
+"dragging"
+);
+}
+);
+
+elements.richEditor.addEventListener(
+"drop",
+(event) => {
+event.preventDefault();
+
+elements.richEditor.classList.remove(
+"dragging"
+);
+
+if (
+event.dataTransfer.files.length
+) {
+handleImageFiles(
+event.dataTransfer.files
+);
+}
+}
+);
+
+elements.richEditor.addEventListener(
+"paste",
+(event) => {
+const files = Array.from(
+event.clipboardData.files
+).filter((file) => {
+return file.type.startsWith(
+"image/"
+);
+});
+
+if (files.length > 0) {
+event.preventDefault();
+handleImageFiles(files);
+}
+}
+);
+
+/* Note more menu */
+
+$("#noteMoreButton").addEventListener(
+"click",
+(event) => {
+const note = getSelectedNote();
+
+if (!note) {
+return;
+}
+
+state.contextNoteId = note.id;
+
+const rectangle =
+event.currentTarget.getBoundingClientRect();
+
+showContextMenu(
+rectangle.right - 190,
+rectangle.bottom + 5
+);
+}
+);
+
+$$(
+"[data-context-action]"
+).forEach((button) => {
+button.addEventListener(
+"click",
+() => {
+const noteId =
+state.contextNoteId;
+
+const action =
+button.dataset.contextAction;
+
+const note =
+state.vault.notes.find(
+(item) =>
+item.id === noteId
+);
+
+hideContextMenu();
+
+if (!note) {
+return;
+}
+
+if (action === "duplicate") {
+duplicateNote(noteId);
+}
+
+if (action === "toggle-type") {
+toggleNoteType(noteId);
+}
+
+if (action === "restore") {
+restoreNote(noteId);
+}
+
+if (action === "export-html") {
+exportNoteAsHtml(noteId);
+}
+
+if (action === "delete") {
+moveNoteToTrash(noteId);
+}
+}
+);
+});
+
+document.addEventListener(
+"click",
+(event) => {
+if (
+!elements.contextMenu.contains(
+event.target
+)
+) {
+hideContextMenu();
+}
+}
+);
+
+/* Drawer */
+
+$("#menuButton").addEventListener(
+"click",
+openDrawer
+);
+
+$("#sidebarSettingsButton").addEventListener(
+"click",
+openDrawer
+);
+
+$("#closeDrawerButton").addEventListener(
+"click",
+closeDrawer
+);
+
+elements.drawerOverlay.addEventListener(
+"click",
+closeDrawer
+);
+
+/* Mobile */
+
+$("#mobileSidebarButton").addEventListener(
+"click",
+openMobileSidebar
+);
+
+elements.mobileOverlay.addEventListener(
+"click",
+closeMobileSidebar
+);
+
+$("#mobileBackButton").addEventListener(
+"click",
+() => {
+flushEditorIntoState();
+
+elements.application.classList.remove(
+"editor-mobile-open"
+);
+
+renderNotesList();
+}
+);
+
+/* Theme and locking */
+
+$("#quickThemeButton").addEventListener(
+"click",
+toggleQuickTheme
+);
+
+$("#lockButton").addEventListener(
+"click",
+() => {
+lockVault(true);
+}
+);
+
+$("#drawerLockButton").addEventListener(
+"click",
+() => {
+lockVault(true);
+}
+);
+
+/* Profile and password */
+
+$("#profileMenuButton").addEventListener(
+"click",
+() => {
+closeDrawer();
+openProfileModal();
+}
+);
+
+$("#changePasswordMenuButton").addEventListener(
+"click",
+() => {
+closeDrawer();
+openChangePasswordModal();
+}
+);
+
+/* Appearance */
+
+$$(".theme-choice").forEach(
+(button) => {
+button.addEventListener(
+"click",
+() => {
+setTheme(
+button.dataset.theme
+);
+}
+);
+}
+);
+
+$$(".accent-choice").forEach(
+(button) => {
+button.addEventListener(
+"click",
+() => {
+setAccent(
+button.dataset.accent,
+button.dataset.rgb
+);
+}
+);
+}
+);
+
+/* Vault menu */
+
+$("#saveNowMenuButton").addEventListener(
+"click",
+async () => {
+await saveVaultImmediately();
+
+closeDrawer();
+
+showToast(
+"Vault saved",
+"Encrypted data is up to date.",
+"success"
+);
+}
+);
+
+$("#exportMenuButton").addEventListener(
+"click",
+() => {
+closeDrawer();
+exportEncryptedVault();
+}
+);
+
+$("#importMenuButton").addEventListener(
+"click",
+() => {
+closeDrawer();
+requestVaultFileImport();
+}
+);
+
+$("#exportCsvMenuButton").addEventListener(
+"click",
+() => {
+closeDrawer();
+exportReadableCsv();
+}
+);
+
+$("#shortcutsMenuButton").addEventListener(
+"click",
+() => {
+closeDrawer();
+openKeyboardShortcutsModal();
+}
+);
+
+$("#aboutMenuButton").addEventListener(
+"click",
+() => {
+closeDrawer();
+openAboutModal();
+}
+);
+
+/* Modal */
+
+$("#modalCloseButton").addEventListener(
+"click",
+closeModal
+);
+
+elements.modalOverlay.addEventListener(
+"mousedown",
+(event) => {
+if (
+event.target ===
+elements.modalOverlay
+) {
+closeModal();
+}
+}
+);
+
+/* File inputs */
+
+elements.vaultFileInput.addEventListener(
+"change",
+() => {
+const file =
+elements.vaultFileInput.files[0];
+
+if (file) {
+processSelectedVaultFile(file);
+}
+}
+);
+
+elements.profileImageInput.addEventListener(
+"change",
+async () => {
+const file =
+elements.profileImageInput.files[0];
+
+if (!file) {
+return;
+}
+
+try {
+const dataUrl =
+await optimizeImage(file);
+
+const preview =
+$("#modalProfilePreview");
+
+if (preview) {
+preview.innerHTML =
+'<img src="' +
+dataUrl +
+'" alt="Profile picture">';
+}
+} catch (error) {
+showToast(
+"Picture could not be loaded",
+error.message ||
+"Select another image.",
+"error"
+);
+}
+}
+);
+
+/* System appearance changes */
+
+const colorSchemeQuery =
+window.matchMedia(
+"(prefers-color-scheme: dark)"
+);
+
+if (
+typeof colorSchemeQuery.addEventListener ===
+"function"
+) {
+colorSchemeQuery.addEventListener(
+"change",
+() => {
+if (
+state.vault?.settings?.theme ===
+"system"
+) {
+applyTheme("system");
+}
+}
+);
+}
+
+/* Keyboard */
+
+document.addEventListener(
+"keydown",
+handleKeyboardShortcuts
+);
+
+/* Activity tracking */
+
+[
+"mousemove",
+"keydown",
+"pointerdown",
+"touchstart"
+].forEach((eventName) => {
+document.addEventListener(
+eventName,
+() => {
+state.lastActivity = Date.now();
+},
+{
+passive: true
+}
+);
+});
+
+window.setInterval(
+checkAutomaticLock,
+30000
+);
+
+/* Save on visibility change */
+
+document.addEventListener(
+"visibilitychange",
+() => {
+if (
+document.hidden &&
+state.vault
+) {
+flushEditorIntoState();
+scheduleVaultSave(true);
+}
+}
+);
+
+window.addEventListener(
+"beforeunload",
+() => {
+flushEditorIntoState();
+}
+);
+}
+
+/* =========================================================
+START APPLICATION
+========================================================= */
+
+initializeApplication();
+</script>
+</body>
+</html>
